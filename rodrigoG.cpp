@@ -1,6 +1,23 @@
 // Created By: Rodrigo Garcia-Novoa
-// Game Project
-// Date 6/15/17
+// Date: 6/15/17
+// Purpose: Video Game Project Side Scroller
+
+//===============================================
+// Responsibilities and What the code does
+//===============================================
+// Create Main Menu
+// Create Character Selection Menu
+// Create Level Selection Menu
+// Displaying
+
+//===============================================
+// Week 4 Progress
+//===============================================
+// Main Menu, Level Selection Menu, and Character
+// Selection Menu both display and scroll. 
+// Working on the logic for changing the display
+// of screens with flags.
+//===============================================
 
 #include <iostream>
 #include <string.h>
