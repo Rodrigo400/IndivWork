@@ -120,12 +120,12 @@ class Global
 {
 	public:
 		int xres, yres;
-		int done;
+		//int done;
 		Global()
 		{
 			xres = 800;
 			yres = 600;
-			done = 0;
+			//done = 0;
 		}
 } gl;
 
@@ -156,6 +156,7 @@ GLuint frameTexture;
 
 int keys[65536];
 int menu_position = 1;
+int done = 0;
 bool display_startmenu = false;
 bool display_settingsmenu = false;
 bool display_highscoresmenu = false;
@@ -169,7 +170,7 @@ int main(void)
 {
 	initXWindows();
 	initOpengl();
-	while (!gl.done) {
+	while (!done) {
 		while (XPending(dpy)) {
 			XEvent e;
 			XNextEvent(dpy, &e);
@@ -344,7 +345,6 @@ void initOpengl(void)
 			GL_RGBA, GL_UNSIGNED_BYTE, settingsData);
 	free(settingsData);
 	unlink("./images/Settings.ppm");
-
 	//===============================================================
 
 	//===============================================================
@@ -469,15 +469,27 @@ void checkKeys(XEvent *e)
 	switch(key)
 	{
 		case XK_Escape:
-			gl.done = 1;
+			done = 1;
 			break;
 		case XK_Down:
-			if (menu_position != 5)
+			if (display_startmenu 
+                    && !display_characterselectionmenu
+                    && menu_position != 5)
 				menu_position++;
+            else if (display_characterselectionmenu 
+                        && !display_startmenu 
+                        && menu_position != 2)
+                menu_position++;
 			break;
 		case XK_Up:
-			if (menu_position != 1)
+			if (display_startmenu 
+                    && !display_characterselectionmenu
+                    && menu_position != 1)
 				menu_position--;
+            else if (display_characterselectionmenu 
+                        && !display_startmenu
+                        && menu_position != 1)
+                menu_position--;
 			break;
 		//case XK_Return:
 		//	if (menu_position == 1)

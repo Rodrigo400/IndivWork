@@ -69,6 +69,7 @@ extern GLuint frameTexture;
 
 extern int menu_position;
 extern int keys[];
+extern int done;
 
 extern bool display_startmenu;
 extern bool display_settingsmenu;
@@ -79,6 +80,7 @@ extern bool display_levelselectionmenu;
 
 void start_menu(int xres, int yres)
 {
+    display_startmenu = 1;
 
 	int highlight_x;
 	int highlight_y;
@@ -296,12 +298,15 @@ void start_menu(int xres, int yres)
 		else if (menu_position == 5)
 		{
 			display_startmenu = false;
+            done = 1;
 		}
 	}	
 }
 
 void characterselection_menu(int xres, int yres)
 {
+    display_startmenu = false;
+
 	int highlight_x;
 	int highlight_y;
 
