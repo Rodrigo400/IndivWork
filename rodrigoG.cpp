@@ -18,11 +18,11 @@
 
 using namespace std;
 
-void start_menu(const int, const int);
+void start_menu(int, int);
 int menu_position_arrows;
 void convertpng2ppm(void);
 void cleanupPPM(void);
-void logo(int,int);
+void logo(int, int);
 
 /*void controls_menu();
   void music_menu();
@@ -39,16 +39,17 @@ extern Ppmimage *logoImage;
 
 extern GLuint logoTexture;
 
-void start_menu(const int xres, const int yres)
+void start_menu(int xres, int yres)
 {
         unsigned int blue = 0x0000ff;
         Rect r;
-        r.bot = yres - 200;
+        r.bot = yres - 400;
         r.left = xres/2 - 55;
         r.center = 0;
         ggprint13(&r, 16, blue, "Play Game");  
         ggprint13(&r, 16, blue, "Options");
         ggprint13(&r, 16, blue, "View High Scores");
+        ggprint13(&r, 16, blue, "Exit Game");
 
 }
 
@@ -67,20 +68,20 @@ void generateTextures(void)
         glGenTextures(1, &logoTexture);
 }
 
-void logo(int xres, int y)
+void logo(int xres, int yres)
 {
         glPushMatrix();
         glColor3f(1.0,1.0,1.0);
-        glTranslatef(xres/2, y, 0);
+		glTranslatef(xres/2, yres*0.6, 0);
         glBindTexture(GL_TEXTURE_2D, logoTexture);
         glEnable(GL_ALPHA_TEST);
         glAlphaFunc(GL_GREATER, 0.0f);
         glColor4ub(255,255,255,255);
         glBegin(GL_QUADS);
-            glTexCoord2f(0.0, 1.0); glVertex2i(-100,-30);
-            glTexCoord2f(0.0, 0.0); glVertex2i(-100,30);
-            glTexCoord2f(1.0, 0.0); glVertex2i(100,30);
-            glTexCoord2f(1.0, 1.0); glVertex2i(100,-30);
+            glTexCoord2f(0.0, 1.0); glVertex2i(-200,-50);
+            glTexCoord2f(0.0, 0.0); glVertex2i(-200,50);
+            glTexCoord2f(1.0, 0.0); glVertex2i(200,50);
+            glTexCoord2f(1.0, 1.0); glVertex2i(200,-50);
         glEnd(); 
         glPopMatrix();
 }

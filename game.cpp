@@ -49,6 +49,8 @@
 //#include "log.h"
 #include "ppm.h"
 #include "fonts.h"
+#include "rodrigoG.h"
+
 
 //defined types
 typedef double Flt;
@@ -77,12 +79,15 @@ Window win;
 void initXWindows(void);
 void initOpengl(void);
 void cleanupXWindows(void);
-void checkResize(XEvent *e);
-void checkMouse(XEvent *e);
-void checkKeys(XEvent *e);
-void init();
-void physics(void);
+//void checkKeys(XEvent *e);
 void render(void);
+
+extern void logo(int,int);
+extern void start_menu(int, int);
+extern void convertpng2ppm(void);
+extern void getImage(void);
+extern void generateTextures(void);
+
 
 //-----------------------------------------------------------------------------
 //Setup timers
@@ -109,55 +114,27 @@ public:
 } timers;
 //-----------------------------------------------------------------------------
 
-class Global {
-public:
-	int done;
-	int xres, yres;
-	int walk;
-	int result;
-    int explode;
-	int walkFrame;
-    int explosionFrame;
-	int keys[65536];
-	double delay;
-	Ppmimage *walkImage;
-    Ppmimage *explosionImage;
-	GLuint walkTexture;
-    GLuint explosionTexture;
-	Vec box[20];
-	Global() {
-		done=0;
-		result = 0;
-		xres=800;
-		yres=600;
-		walkFrame=0;
-		walkImage=NULL;
-        explosionFrame=0;
-        explosionImage=NULL;
-		delay = 0.1;
-		for (int i=0; i<20; i++) {
-			box[i][0] = rnd() * xres;
-			box[i][1] = rnd() * (yres-220) + 220.0;
-			box[i][2] = 0.0;
-		}
-		memset(keys, 0, 65536);
-	}
-} gl;
+//---------------------------------------------------------
+//Global
+int xres = 800;
+int yres = 600;
+int done = 0;
+//---------------------------------------------------------
+
+Ppmimage *logoImage = NULL;
+
+GLuint logoTexture;
 
 int main(void)
 {
 	initXWindows();
 	initOpengl();
-	init();
-	while (!gl.done) {
+	while (!done) {
 		while (XPending(dpy)) {
 			XEvent e;
 			XNextEvent(dpy, &e);
-			checkResize(&e);
-			checkMouse(&e);
-			checkKeys(&e);
+			//checkKeys(&e);
 		}
-		physics();
 		render();
 		glXSwapBuffers(dpy, win);
 	}
@@ -181,8 +158,8 @@ void setTitle(void)
 
 void setupScreenRes(const int w, const int h)
 {
-	gl.xres = w;
-	gl.yres = h;
+	xres = w;
+	yres = h;
 }
 
 void initXWindows(void)
@@ -190,7 +167,7 @@ void initXWindows(void)
 	GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 	//GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, None };
 	XSetWindowAttributes swa;
-	setupScreenRes(gl.xres, gl.yres);
+	setupScreenRes(xres, yres);
 	dpy = XOpenDisplay(NULL);
 	if (dpy == NULL) {
 		printf("\n\tcannot connect to X server\n\n");
@@ -206,7 +183,7 @@ void initXWindows(void)
 	swa.colormap = cmap;
 	swa.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask |
 						StructureNotifyMask | SubstructureNotifyMask;
-	win = XCreateWindow(dpy, root, 0, 0, gl.xres, gl.yres, 0,
+	win = XCreateWindow(dpy, root, 0, 0, xres, yres, 0,
 							vi->depth, InputOutput, vi->visual,
 							CWColormap | CWEventMask, &swa);
 	GLXContext glc = glXCreateContext(dpy, vi, NULL, GL_TRUE);
@@ -222,7 +199,7 @@ void reshapeWindow(int width, int height)
 	glViewport(0, 0, (GLint)width, (GLint)height);
 	glMatrixMode(GL_PROJECTION); glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
-	glOrtho(0, gl.xres, 0, gl.yres, -1, 1);
+	glOrtho(0, xres, 0, yres, -1, 1);
 	setTitle();
 }
 
@@ -259,12 +236,12 @@ unsigned char *buildAlphaData(Ppmimage *img)
 void initOpengl(void)
 {
 	//OpenGL initialization
-	glViewport(0, 0, gl.xres, gl.yres);
+	glViewport(0, 0, xres, yres);
 	//Initialize matrices
 	glMatrixMode(GL_PROJECTION); glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
 	//This sets 2D mode (no perspective)
-	glOrtho(0, gl.xres, 0, gl.yres, -1, 1);
+	glOrtho(0, xres, 0, yres, -1, 1);
 	//
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
@@ -278,192 +255,28 @@ void initOpengl(void)
 	glEnable(GL_TEXTURE_2D);
 	initialize_fonts();
 	//
-	//load the images file into a ppm structure.
 	//
-	system("convert ./images/walk.gif ./images/walk.ppm");
-	gl.walkImage = ppm6GetImage("./images/walk.ppm");
-	int w = gl.walkImage->width;
-	int h = gl.walkImage->height;
+	//
+	//Load logo
+	//system("convert ./images/OgirdorLogo.png ./images/OgirdorLogo.ppm");
+	
+	convertpng2ppm();
 
-	system("convert ./images/explosion.jpeg ./images/explosion.ppm");
-	gl.explosionImage = ppm6GetImage("./images/explosion.ppm");
-	int ew = gl.explosionImage->width;
-	int eh = gl.explosionImage->height;
-    
-	//
-	//create opengl texture elements
-	glGenTextures(1, &gl.walkTexture);
-	//-------------------------------------------------------------------------
-	//silhouette
-	//this is similar to a sprite graphic
-	//
-	glBindTexture(GL_TEXTURE_2D, gl.walkTexture);
-	//
+	getImage();
+	
+	generateTextures();
+
+	// Logo
+	int w = logoImage->width;
+	int h = logoImage->height;	
+	glBindTexture(GL_TEXTURE_2D, logoTexture);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-	//
-	//must build a new set of data...
-	unsigned char *walkData = buildAlphaData(gl.walkImage);	
+	unsigned char *logoData = buildAlphaData(logoImage);	
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-							GL_RGBA, GL_UNSIGNED_BYTE, walkData);
-	free(walkData);
-	unlink("./images/walk.ppm");
-
-
-	//create opengl texture elements
-	glGenTextures(1, &gl.explosionTexture);
+							GL_RGBA, GL_UNSIGNED_BYTE, logoData);
+	free(logoData);
 	//-------------------------------------------------------------------------
-	//silhouette
-	//this is similar to a sprite graphic
-	//
-	glBindTexture(GL_TEXTURE_2D, gl.explosionTexture);
-	//
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-	//
-	//must build a new set of data...
-	unsigned char *explosionData = buildAlphaData(gl.explosionImage);	
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ew, eh, 0,
-							GL_RGBA, GL_UNSIGNED_BYTE, explosionData);
-	free(explosionData);
-	unlink("./images/explosion.ppm");
-	//-------------------------------------------------------------------------
-}
-
-void checkResize(XEvent *e)
-{
-	//The ConfigureNotify is sent by the
-	//server if the window is resized.
-	if (e->type != ConfigureNotify)
-		return;
-	XConfigureEvent xce = e->xconfigure;
-	if (xce.width != gl.xres || xce.height != gl.yres) {
-		//Window size did change.
-		reshapeWindow(xce.width, xce.height);
-	}
-}
-
-void init() {
-
-}
-
-void checkMouse(XEvent *e)
-{
-	//Did the mouse move?
-	//Was a mouse button clicked?
-	static int savex = 0;
-	static int savey = 0;
-	//
-	if (e->type == ButtonRelease) {
-		return;
-	}
-	if (e->type == ButtonPress) {
-		if (e->xbutton.button==1) {
-			//Left button is down
-		}
-		if (e->xbutton.button==3) {
-			//Right button is down
-		}
-	}
-	if (savex != e->xbutton.x || savey != e->xbutton.y) {
-		//Mouse moved
-		savex = e->xbutton.x;
-		savey = e->xbutton.y;
-	}
-}
-
-void screenCapture()
-{
-	static int num = 0;
-	unsigned char *data = new unsigned char[gl.xres*gl.yres*3];
-	glReadPixels(0, 0, gl.xres, gl.yres, GL_RGB, GL_UNSIGNED_BYTE, data);
-	char ts[64];
-	sprintf(ts, "pic%03i.ppm", num++);
-	FILE *fpo = fopen(ts,"w");
-	if (fpo)
-	{
-		fprintf(fpo, "P6\n");
-		fprintf(fpo, "%i %i\n", gl.xres, gl.yres);
-		fprintf(fpo, "255\n");
-		unsigned char *p = data;
-		p += ((gl.yres-1) * gl.xres*3);
-		/*for (int i = 0; i < (gl.xres*gl.xres*3); i++)
-		{
-			fprintf(fpo, "%c", *(p+i));
-		}*/
-		for (int i = 0; i < gl.yres; i++)
-		{
-			for (int j = 0; j < (gl.xres*3); j++)
-			{
-				fprintf(fpo, "%c", *(p+j));
-			}
-			p = p - (gl.xres*3);
-		}
-
-		fclose(fpo);
-	}
-
-	delete [] data;
-}
-
-void checkKeys(XEvent *e)
-{
-	//keyboard input?
-	static int shift=0;
-	int key = XLookupKeysym(&e->xkey, 0);
-	//global static int key[65536];
-
-	if (e->type == KeyRelease) {					// shift released
-		gl.keys[key] = 0;
-		if (key == XK_Shift_L || key == XK_Shift_R)
-			shift=0;
-				
-		return;
-	}
-	if (e->type == KeyPress) {					// shift pressed
-		gl.keys[key] = 1;
-		if (key == XK_Shift_L || key == XK_Shift_R) {
-			shift=1;
-			return;
-		}
-	} else {
-		return;
-	}
-	if (shift) {}
-	switch (key) {
-		case XK_s:
-		    screenCapture();
-			break;
-		case XK_w:
-			timers.recordTime(&timers.walkTime);
-			gl.walk ^= 1;
-			break;
-        case XK_e:
-            timers.recordTime(&timers.explosionTime);
-           	gl.explode ^=1;
-       		break;
-		case XK_Left:
-			break;
-		case XK_Right:
-			//timers.recordTime(&timers.walkTime);
-			//gl.walk ^= 1;
-			break;
-		case XK_Up:
-			break;
-		case XK_Down:
-			break;
-		case XK_equal:
-			gl.delay -= 0.005;
-			if (gl.delay < 0.005)
-				gl.delay = 0.005;
-			break;
-		case XK_minus:
-			gl.delay += 0.005;
-			break;
-		case XK_Escape:
-			gl.done=1;
-			break;
-	}
 }
 
 Flt VecNormalize(Vec vec)
@@ -485,306 +298,48 @@ Flt VecNormalize(Vec vec)
 	return(len);
 }
 
-void physics(void)
-{
-
-	if (gl.walk && gl.result == 0) {
-		//man is walking...
-		//when time is up, advance the frame.
-		timers.recordTime(&timers.timeCurrent);
-		double timeSpan = timers.timeDiff(&timers.walkTime, &timers.timeCurrent);
-		if (timeSpan > gl.delay) {
-			//advance
-			++gl.walkFrame;
-			if (gl.walkFrame >= 16)
-				gl.walkFrame -= 16;
-			timers.recordTime(&timers.walkTime);
-		}
-		for (int i=0; i<20; i++) {
-			gl.box[i][0] -= 2.0 * (0.05 / gl.delay);
-			if (gl.box[i][0] < -10.0)
-				gl.box[i][0] += gl.xres + 10.0;
-		}
-	}
-
-	if (gl.walk && gl.result == 1) {
-		//man is walking...
-		//when time is up, advance the frame.
-		timers.recordTime(&timers.timeCurrent);
-		double timeSpan = timers.timeDiff(&timers.walkTime, &timers.timeCurrent);
-		if (timeSpan > gl.delay) {
-			//advance
-			++gl.walkFrame;
-			if (gl.walkFrame >= 16)
-				gl.walkFrame -= 16;
-			timers.recordTime(&timers.walkTime);
-		}
-		for (int i=0; i<20; i++) {
-			gl.box[i][0] += 2.0 * (0.05 / gl.delay);
-			if (gl.box[i][0] > gl.xres + 10.0)
-				gl.box[i][0] -= gl.xres + 10.0;
-		}
-	}
-
-
-	if (gl.walk || gl.keys[XK_Right]) {
-		//man is walking...
-		//when time is up, advance the frame.
-		timers.recordTime(&timers.timeCurrent);
-		double timeSpan = timers.timeDiff(&timers.walkTime, &timers.timeCurrent);
-		if (timeSpan > gl.delay) {
-			//advance
-			++gl.walkFrame;
-			if (gl.walkFrame >= 16)
-				gl.walkFrame -= 16;
-			timers.recordTime(&timers.walkTime);
-		}
-		for (int i=0; i<20; i++) {
-			gl.box[i][0] -= 2.0 * (0.05 / gl.delay);
-			if (gl.box[i][0] < -10.0)
-				gl.box[i][0] += gl.xres + 10.0;
-		}
-	}
-	
-	if (gl.walk || gl.keys[XK_Left]) {
-		//man is walking...
-		//when time is up, advance the frame.
-		timers.recordTime(&timers.timeCurrent);
-		double timeSpan = timers.timeDiff(&timers.walkTime, &timers.timeCurrent);
-		if (timeSpan > gl.delay) {
-			//advance
-			++gl.walkFrame;
-			if (gl.walkFrame >= 16)
-				gl.walkFrame -= 16;
-			timers.recordTime(&timers.walkTime);
-		}
-		for (int i=0; i<20; i++) {
-			gl.box[i][0] += 2.0 * (0.05 / gl.delay);
-			if (gl.box[i][0] > gl.xres + 10.0)
-				gl.box[i][0] -= gl.xres + 10.0;
-		}
-	}
-
-    if (gl.explode) 
-    {
-            timers.recordTime(&timers.timeCurrent);
-            double timeSpan = timers.timeDiff(&timers.explosionTime, &timers.timeCurrent);
-            if (timeSpan > gl.delay)
-            {
-                    ++gl.explosionFrame;
-                    if (gl.explosionFrame >= 25)
-                    {
-                            gl.explosionFrame -= 25;
-                    }
-                    timers.recordTime(&timers.explosionTime);
-            }
-    }
-}
-
 void render(void)
 {
-	Rect r;
 	//Clear the screen
 	glClearColor(0.1, 0.1, 0.1, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
-	float cx = gl.xres/2.0;
-	float cy = gl.yres/2.0;
-	//
-	//show ground
-	glBegin(GL_QUADS);
-		glColor3f(1.0, 0.4117, 0.7058);
-		glVertex2i(0,       220);
-		glVertex2i(gl.xres, 220);
-		glColor3f(1.0, 0.7137, 0.7568);
-		glVertex2i(gl.xres,   0);
-		glVertex2i(0,         0);
-	glEnd();
-	//
-	//fake shadow
-	glColor3f(0.25, 0.25, 0.25);
-	glBegin(GL_QUADS);
-		glVertex2i(cx-60, 150);
-		glVertex2i(cx+50, 150);
-		glVertex2i(cx+50, 130);
-		glVertex2i(cx-60, 130);
-	glEnd();
-	//
-	//show boxes as background
-	for (int i=0; i<20; i++) { 
-		glPushMatrix();
-		glTranslated(gl.box[i][0],gl.box[i][1],gl.box[i][2]);
-		glColor3f(0.2, 0.2, 0.2);
-		glBegin(GL_QUADS);
-			glVertex2i( 0,  0);
-			glVertex2i( 0, 30);
-			glVertex2i(20, 30);
-			glVertex2i(20,  0);
-		glEnd();
-		glPopMatrix();
-	}
 
-    if (gl.explode && gl.result == 0)
-    {
-            float h = 100; 
-            float w = 100;
-            glPushMatrix();
-            glColor3f(1.0,1.0,1.0);
-            glBindTexture(GL_TEXTURE_2D, gl.explosionTexture);
-            glEnable(GL_ALPHA_TEST);
-            glAlphaFunc(GL_GREATER, 0.0f);
-            glColor4ub(255,255,255,255);
-            int eix = gl.explosionFrame % 5;
-            int eiy = 0;
-            if (gl.explosionFrame >= 5)
-            {
-                    eiy = 1;
-            }
-            if (gl.explosionFrame >= 10)
-            {
-                    eiy = 2;
-            }
-            if (gl.explosionFrame >= 15)
-            {
-                    eiy = 3;
-            }
-            if (gl.explosionFrame >= 20)
-            {
-                    eiy = 4;
-            }
-            if (gl.explosionFrame >= 25)
-            {
-                    eiy = 5;
-            }
-            float etx = (float)eix / 5.0;
-            float ety = (float)eiy / 5.0;
-
-            glBegin(GL_QUADS);
-            glTexCoord2f(etx, ety+.20);  glVertex2i(cx-w + 150, cy-h);
-            glTexCoord2f(etx, ety);  glVertex2i(cx-w + 150, cy+h);
-            glTexCoord2f(etx+.20, ety);  glVertex2i(cx+w + 150, cy+h);
-            glTexCoord2f(etx+.20, ety+.20);  glVertex2i(cx+w + 150, cy-h);
-            glEnd();
-            glPopMatrix();
-    }
-
-    if (gl.explode && gl.result == 1)
-    {
-            float h = 100; 
-            float w = 100;
-            glPushMatrix();
-            glColor3f(1.0,1.0,1.0);
-            glBindTexture(GL_TEXTURE_2D, gl.explosionTexture);
-            glEnable(GL_ALPHA_TEST);
-            glAlphaFunc(GL_GREATER, 0.0f);
-            glColor4ub(255,255,255,255);
-            int eix = gl.explosionFrame % 5;
-            int eiy = 0;
-            if (gl.explosionFrame >= 5)
-            {
-                    eiy = 1;
-            }
-            if (gl.explosionFrame >= 10)
-            {
-                    eiy = 2;
-            }
-            if (gl.explosionFrame >= 15)
-            {
-                    eiy = 3;
-            }
-            if (gl.explosionFrame >= 20)
-            {
-                    eiy = 4;
-            }
-            if (gl.explosionFrame >= 25)
-            {
-                    eiy = 5;
-            }
-            float etx = (float)eix / 5.0;
-            float ety = (float)eiy / 5.0;
-
-            glBegin(GL_QUADS);
-            glTexCoord2f(etx, ety+.20);  glVertex2i(cx-w - 150, cy-h);
-            glTexCoord2f(etx, ety);  glVertex2i(cx-w - 150, cy+h);
-            glTexCoord2f(etx+.20, ety);  glVertex2i(cx+w - 150, cy+h);
-            glTexCoord2f(etx+.20, ety+.20);  glVertex2i(cx+w - 150, cy-h);
-            glEnd();
-            glPopMatrix();
-    }
-
-
-	float h = 200.0;
-	float w = h * 0.5;
+	
+	/*Logo Display
+	float h = 75;
+	float w = 300;
 	glPushMatrix();
-	glColor3f(1.0, 1.0, 1.0);
-	glBindTexture(GL_TEXTURE_2D, gl.walkTexture);
-	//
+	glColor3f(1.0,1.0,1.0);
+	glBindTexture(GL_TEXTURE_2D, gl.logoTexture);
 	glEnable(GL_ALPHA_TEST);
 	glAlphaFunc(GL_GREATER, 0.0f);
 	glColor4ub(255,255,255,255);
-	int ix = gl.walkFrame % 8;
-	int iy = 0;
-	if (gl.walkFrame >= 8)
-		iy = 1;
-	float tx = (float)ix / 8.0;
-	float ty = (float)iy / 2.0;
-	
-	//int result;
 	glBegin(GL_QUADS);
-		if (gl.keys[XK_Right])
-		{
-			glTexCoord2f(tx,      ty+.5); glVertex2i(cx-w, cy-h);
-			glTexCoord2f(tx,      ty);    glVertex2i(cx-w, cy+h);
-			glTexCoord2f(tx+.125, ty);    glVertex2i(cx+w, cy+h);
-			glTexCoord2f(tx+.125, ty+.5); glVertex2i(cx+w, cy-h);
-			gl.result = 0;	
-		}
-
-		if (gl.keys[XK_Left])
-		{
-			glTexCoord2f(tx+.125,      ty+.5); glVertex2i(cx-w, cy-h);
-			glTexCoord2f(tx+.125,      ty);    glVertex2i(cx-w, cy+h);
-			glTexCoord2f(tx, ty);    glVertex2i(cx+w, cy+h);
-			glTexCoord2f(tx, ty+.5); glVertex2i(cx+w, cy-h);
-			gl.result = 1;
-		}
-
-		if (gl.keys[XK_Left] == 0 && gl.keys[XK_Right] == 0 && gl.result == 0)
-		{
-			glTexCoord2f(tx,      ty+.5); glVertex2i(cx-w, cy-h);
-			glTexCoord2f(tx,      ty);    glVertex2i(cx-w, cy+h);
-			glTexCoord2f(tx+.125, ty);    glVertex2i(cx+w, cy+h);
-			glTexCoord2f(tx+.125, ty+.5); glVertex2i(cx+w, cy-h);
-		}
-
-			
-		if (gl.keys[XK_Left] == 0 && gl.keys[XK_Right] == 0 && gl.result == 1)
-		{
-			glTexCoord2f(tx+.125,      ty+.5); glVertex2i(cx-w, cy-h);
-			glTexCoord2f(tx+.125,      ty);    glVertex2i(cx-w, cy+h);
-			glTexCoord2f(tx, ty);    glVertex2i(cx+w, cy+h);
-			glTexCoord2f(tx, ty+.5); glVertex2i(cx+w, cy-h);
-		}
-
-
+		glTexCoord2f(0.0, 1.0); glVertex2i(cx-w, cy-h + 150);
+		glTexCoord2f(0.0, 0.0); glVertex2i(cx-w,cy+h + 150);
+		glTexCoord2f(1.0, 0.0); glVertex2i(cx+w,cy+h + 150);
+		glTexCoord2f(1.0, 1.0); glVertex2i(cx+w,cy-h + 150);
 	glEnd();
 	glPopMatrix();
+*/
+	
+	logo(xres, yres);
+
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glDisable(GL_ALPHA_TEST);	
-	//	
-	unsigned int c = 0x00ffff44;
-	r.bot = gl.yres - 20;
-	r.left = 10;
-	r.center = 0;
-	ggprint8b(&r, 16, c, "W   Walk cycle");
-	ggprint8b(&r, 16, c, "+   faster");
-	ggprint8b(&r, 16, c, "-   slower");
-	ggprint8b(&r, 16, c, "right arrow -> walk right");
-	ggprint8b(&r, 16, c, "left arrow  <- walk left");
-	ggprint8b(&r, 16, c, "frame: %i", gl.walkFrame);
-	ggprint8b(&r, 16, c, "e    Explosion");
-	ggprint8b(&r, 16, c, "frame: %i", gl.explosionFrame);
-	ggprint8b(&r, 16, c, "S   Screen Capture");
 
+
+	//Display Text	
+	/*unsigned int blue = 0x0000ff;
+	r.bot = gl.yres - 400;
+	r.left = gl.xres/2 - 55;
+	r.center = 0;
+	ggprint8b(&r, 16, blue, "Play Game");
+	ggprint8b(&r, 16, blue, "Options");
+	ggprint8b(&r, 16, blue, "View High Scores");
+*/
+
+	start_menu(xres, yres);
 }
 
 
