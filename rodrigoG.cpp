@@ -19,7 +19,8 @@
 using namespace std;
 
 void start_menu(int, int);
-int menu_position_arrows;
+void level_selection_menu(int, int);
+int menu_position_highlight;
 void convertpng2ppm(void);
 void cleanupPPM(void);
 void logo(int, int);

@@ -114,11 +114,25 @@ public:
 } timers;
 //-----------------------------------------------------------------------------
 
+class Global
+{
+	public:
+		int xres, yres;
+		int done;
+		Global()
+		{
+			xres = 800;
+			yres = 600;
+			done = 0;
+		}
+} gl;
+
+
 //---------------------------------------------------------
 //Global
-int xres = 800;
-int yres = 600;
-int done = 0;
+//int xres = 800;
+//int yres = 600;
+//int done = 0;
 //---------------------------------------------------------
 
 Ppmimage *logoImage = NULL;
@@ -129,7 +143,7 @@ int main(void)
 {
 	initXWindows();
 	initOpengl();
-	while (!done) {
+	while (!gl.done) {
 		while (XPending(dpy)) {
 			XEvent e;
 			XNextEvent(dpy, &e);
@@ -158,8 +172,8 @@ void setTitle(void)
 
 void setupScreenRes(const int w, const int h)
 {
-	xres = w;
-	yres = h;
+	gl.xres = w;
+	gl.yres = h;
 }
 
 void initXWindows(void)
@@ -167,7 +181,7 @@ void initXWindows(void)
 	GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 	//GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, None };
 	XSetWindowAttributes swa;
-	setupScreenRes(xres, yres);
+	setupScreenRes(gl.xres, gl.yres);
 	dpy = XOpenDisplay(NULL);
 	if (dpy == NULL) {
 		printf("\n\tcannot connect to X server\n\n");
@@ -183,7 +197,7 @@ void initXWindows(void)
 	swa.colormap = cmap;
 	swa.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask |
 						StructureNotifyMask | SubstructureNotifyMask;
-	win = XCreateWindow(dpy, root, 0, 0, xres, yres, 0,
+	win = XCreateWindow(dpy, root, 0, 0, gl.xres, gl.yres, 0,
 							vi->depth, InputOutput, vi->visual,
 							CWColormap | CWEventMask, &swa);
 	GLXContext glc = glXCreateContext(dpy, vi, NULL, GL_TRUE);
@@ -199,7 +213,7 @@ void reshapeWindow(int width, int height)
 	glViewport(0, 0, (GLint)width, (GLint)height);
 	glMatrixMode(GL_PROJECTION); glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
-	glOrtho(0, xres, 0, yres, -1, 1);
+	glOrtho(0, gl.xres, 0, gl.yres, -1, 1);
 	setTitle();
 }
 
@@ -236,12 +250,12 @@ unsigned char *buildAlphaData(Ppmimage *img)
 void initOpengl(void)
 {
 	//OpenGL initialization
-	glViewport(0, 0, xres, yres);
+	glViewport(0, 0, gl.xres, gl.yres);
 	//Initialize matrices
 	glMatrixMode(GL_PROJECTION); glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
 	//This sets 2D mode (no perspective)
-	glOrtho(0, xres, 0, yres, -1, 1);
+	glOrtho(0, gl.xres, 0, gl.yres, -1, 1);
 	//
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
@@ -323,7 +337,7 @@ void render(void)
 	glPopMatrix();
 */
 	
-	logo(xres, yres);
+	logo(gl.xres, gl.yres);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glDisable(GL_ALPHA_TEST);	
@@ -339,7 +353,7 @@ void render(void)
 	ggprint8b(&r, 16, blue, "View High Scores");
 */
 
-	start_menu(xres, yres);
+	start_menu(gl.xres, gl.yres);
 }
 
 
