@@ -84,6 +84,8 @@ void render(void);
 
 extern void logo(int,int);
 extern void start_menu(int, int);
+extern void characterselection_menu(int, int);
+extern void levelselection_menu(int, int);
 extern void convertpng2ppm(void);
 extern void getImage(void);
 extern void generateTextures(void);
@@ -137,6 +139,9 @@ Ppmimage *highscoresImage = NULL;
 Ppmimage *creditsImage = NULL;
 Ppmimage *exitImage = NULL;
 Ppmimage *texthighlightImage = NULL;
+Ppmimage *levelselectionImage = NULL;
+Ppmimage *characterselectionImage = NULL;
+Ppmimage *frameImage = NULL;
 
 GLuint logoTexture;
 GLuint playTexture;
@@ -145,6 +150,9 @@ GLuint highscoresTexture;
 GLuint creditsTexture;
 GLuint exitTexture;
 GLuint texthighlightTexture;
+GLuint levelselectionTexture;
+GLuint characterselectionTexture;
+GLuint frameTexture;
 
 int keys[65536];
 int menu_position = 1;
@@ -394,6 +402,47 @@ void initOpengl(void)
 	unlink("./images/TextHighlight.ppm");
 	//===============================================================
 	
+	//===============================================================
+	// Level Selection Background
+	w = levelselectionImage->width;
+	h = levelselectionImage->height;	
+	glBindTexture(GL_TEXTURE_2D, levelselectionTexture);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	unsigned char *levelselectionData = buildAlphaData(levelselectionImage);	
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+			GL_RGBA, GL_UNSIGNED_BYTE, levelselectionData);
+	free(levelselectionData);
+	unlink("./images/LevelSelection.ppm");
+	//===============================================================
+	
+	//===============================================================
+	// Character Selection Background
+	w = characterselectionImage->width;
+	h = characterselectionImage->height;	
+	glBindTexture(GL_TEXTURE_2D, characterselectionTexture);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	unsigned char *characterselectionData = buildAlphaData(characterselectionImage);	
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+			GL_RGBA, GL_UNSIGNED_BYTE, characterselectionData);
+	free(characterselectionData);
+	unlink("./images/CharacterSelection.ppm");
+	//===============================================================
+	
+	//===============================================================
+	// Frame Background
+	w = frameImage->width;
+	h = frameImage->height;	
+	glBindTexture(GL_TEXTURE_2D, frameTexture);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	unsigned char *frameData = buildAlphaData(frameImage);	
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+			GL_RGBA, GL_UNSIGNED_BYTE, frameData);
+	free(frameData);
+	unlink("./images/Frame.ppm");
+	//===============================================================
 	
 	//-------------------------------------------------------------------------
 }
@@ -430,7 +479,9 @@ void checkKeys(XEvent *e)
 				menu_position--;
 			break;
 		//case XK_Return:
-		//	if 
+		//	if (menu_position == 1)
+		//	{
+					
 
 	}
 }
@@ -461,6 +512,11 @@ void render(void)
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	start_menu(gl.xres, gl.yres);
+
+	if (display_characterselectionmenu)
+	{
+		characterselection_menu(gl.xres, gl.yres);
+	}
 
 }
 
