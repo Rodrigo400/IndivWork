@@ -130,17 +130,13 @@ class Global
 
 //---------------------------------------------------------
 //Global
-//int xres = 800;
-//int yres = 600;
-//int done = 0;
-//---------------------------------------------------------
-
 Ppmimage *logoImage = NULL;
 Ppmimage *playImage = NULL;
 Ppmimage *settingsImage = NULL;
 Ppmimage *highscoresImage = NULL;
 Ppmimage *creditsImage = NULL;
 Ppmimage *exitImage = NULL;
+Ppmimage *texthighlightImage = NULL;
 
 GLuint logoTexture;
 GLuint playTexture;
@@ -148,6 +144,17 @@ GLuint settingsTexture;
 GLuint highscoresTexture;
 GLuint creditsTexture;
 GLuint exitTexture;
+GLuint texthighlightTexture;
+
+int keys[65536];
+int menu_position = 1;
+bool display_startmenu = false;
+bool display_settingsmenu = false;
+bool display_highscoresmenu = false;
+bool display_creditsmenu = false;
+bool display_characterselectionmenu = false;
+
+//---------------------------------------------------------
 
 int main(void)
 {
@@ -372,7 +379,60 @@ void initOpengl(void)
 	free(exitData);
 	unlink("./images/Exit.ppm");
 	//===============================================================
+	
+	//===============================================================
+	// Highlight
+	w = texthighlightImage->width;
+	h = texthighlightImage->height;	
+	glBindTexture(GL_TEXTURE_2D, texthighlightTexture);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	unsigned char *texthighlightData = buildAlphaData(texthighlightImage);	
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+			GL_RGBA, GL_UNSIGNED_BYTE, texthighlightData);
+	free(exitData);
+	unlink("./images/TextHighlight.ppm");
+	//===============================================================
+	
+	
 	//-------------------------------------------------------------------------
+}
+
+void checkKeys(XEvent *e)
+{
+	int key = XLookupKeysym(&e->xkey, 0);
+	if (e->type == KeyRelease)
+	{
+		keys[key] = 0;
+		if (key == XK_Shift_L || key == XK_Shift_R)
+			return;
+	}
+	if (e->type == KeyPress)
+	{
+		keys[key] = 1;
+		if (key == XK_Shift_L || key == XK_Shift_R)
+			return;
+	}
+	else
+		return;
+
+	switch(key)
+	{
+		case XK_Escape:
+			gl.done = 1;
+			break;
+		case XK_Down:
+			if (menu_position != 5)
+				menu_position++;
+			break;
+		case XK_Up:
+			if (menu_position != 1)
+				menu_position--;
+			break;
+		//case XK_Return:
+		//	if 
+
+	}
 }
 
 Flt VecNormalize(Vec vec)
@@ -402,10 +462,6 @@ void render(void)
 
 	start_menu(gl.xres, gl.yres);
 
-	//logo(gl.xres, gl.yres);
-
-	//glBindTexture(GL_TEXTURE_2D, 0);
-	//glDisable(GL_ALPHA_TEST);	
 }
 
 
