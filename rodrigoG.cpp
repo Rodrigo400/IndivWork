@@ -90,20 +90,20 @@ void start_menu(int xres, int yres)
 	else if (menu_position == 4)
 	{
 		highlight_x = xres/2;
-		highlight_y = yres*0.4;
+		highlight_y = yres*0.3;
 	}
 	else if (menu_position == 5)
 	{
 		highlight_x = xres/2;
-		highlight_y = yres*0.3;
+		highlight_y = yres*0.2;
 	}
 
 	
 	//=================================================
 	//Text Highlight===================================
 	//=================================================
-	float h = 8;
-	float w = 200;
+	float h = 10;
+	float w = 240;
 	glPushMatrix();
 	glColor3f(1.0,1.0,1.0);
 	glTranslatef(highlight_x, highlight_y, 0);

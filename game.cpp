@@ -79,7 +79,7 @@ Window win;
 void initXWindows(void);
 void initOpengl(void);
 void cleanupXWindows(void);
-//void checkKeys(XEvent *e);
+void checkKeys(XEvent *e);
 void render(void);
 
 extern void logo(int,int);
@@ -164,7 +164,7 @@ int main(void)
 		while (XPending(dpy)) {
 			XEvent e;
 			XNextEvent(dpy, &e);
-			//checkKeys(&e);
+			checkKeys(&e);
 		}
 		render();
 		glXSwapBuffers(dpy, win);
