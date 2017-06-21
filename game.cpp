@@ -281,8 +281,6 @@ void initOpengl(void)
 	//
 	//
 	//
-	//Load logo
-	//system("convert ./images/OgirdorLogo.png ./images/OgirdorLogo.ppm");
 
 	convertpng2ppm();
 
@@ -402,158 +400,13 @@ void render(void)
 	glClearColor(0.1, 0.1, 0.1, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	//float cx = gl.xres/2.0;
-	//float cy = gl.yres/2.0;
-
-	//=================================================
-	//Logo Display=====================================
-	//=================================================
-	float h = 100;
-	float w = 275;
-	glPushMatrix();
-	glColor3f(1.0,1.0,1.0);
-	glTranslatef(gl.xres/2, gl.yres*0.8, 0);
-	glBindTexture(GL_TEXTURE_2D, logoTexture);
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.0f);
-	glColor4ub(255,255,255,255);
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, 1.0); glVertex2i(-w,-h);
-	glTexCoord2f(0.0, 0.0); glVertex2i(-w,h);
-	glTexCoord2f(1.0, 0.0); glVertex2i(w,h);
-	glTexCoord2f(1.0, 1.0); glVertex2i(w,-h);
-	glEnd();
-	glPopMatrix();
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_ALPHA_TEST);
-	//=================================================
-
-	//=================================================
-	//Play Display=====================================
-	//=================================================
-	h = 50;
-	w = 100;
-	glPushMatrix();
-	glColor3f(1.0,1.0,1.0);
-	glTranslatef(gl.xres/2, gl.yres*0.6, 0);
-	glBindTexture(GL_TEXTURE_2D, playTexture);
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.0f);
-	glColor4ub(255,255,255,255);
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, 1.0); glVertex2i(-w,-h);
-	glTexCoord2f(0.0, 0.0); glVertex2i(-w,h);
-	glTexCoord2f(1.0, 0.0); glVertex2i(w,h);
-	glTexCoord2f(1.0, 1.0); glVertex2i(w,-h);
-	glEnd();
-	glPopMatrix();
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_ALPHA_TEST);
-	//=================================================
-
-	//=================================================
-	//Settings Display=================================
-	//=================================================
-	h = 50;
-	w = 150;
-	glPushMatrix();
-	glColor3f(1.0,1.0,1.0);
-	glTranslatef(gl.xres/2, gl.yres*0.5, 0);
-	glBindTexture(GL_TEXTURE_2D, settingsTexture);
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.0f);
-	glColor4ub(255,255,255,255);
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, 1.0); glVertex2i(-w,-h);
-	glTexCoord2f(0.0, 0.0); glVertex2i(-w,h);
-	glTexCoord2f(1.0, 0.0); glVertex2i(w,h);
-	glTexCoord2f(1.0, 1.0); glVertex2i(w,-h);
-	glEnd();
-	glPopMatrix();
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_ALPHA_TEST);
-	//=================================================
-
-	//=================================================
-	//High Scores Display==============================
-	//=================================================
-	h = 50;
-	w = 200;
-	glPushMatrix();
-	glColor3f(1.0,1.0,1.0);
-	glTranslatef(gl.xres/2, gl.yres*0.4, 0);
-	glBindTexture(GL_TEXTURE_2D, highscoresTexture);
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.0f);
-	glColor4ub(255,255,255,255);
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, 1.0); glVertex2i(-w,-h);
-	glTexCoord2f(0.0, 0.0); glVertex2i(-w,h);
-	glTexCoord2f(1.0, 0.0); glVertex2i(w,h);
-	glTexCoord2f(1.0, 1.0); glVertex2i(w,-h);
-	glEnd();
-	glPopMatrix();
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_ALPHA_TEST);
-	//=================================================
-
-	//=================================================
-	//Credits Display==================================
-	//=================================================
-	h = 90;
-	w = 150;
-	glPushMatrix();
-	glColor3f(1.0,1.0,1.0);
-	glTranslatef(gl.xres/2, gl.yres*0.3, 0);
-	glBindTexture(GL_TEXTURE_2D, creditsTexture);
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.0f);
-	glColor4ub(255,255,255,255);
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, 1.0); glVertex2i(-w,-h);
-	glTexCoord2f(0.0, 0.0); glVertex2i(-w,h);
-	glTexCoord2f(1.0, 0.0); glVertex2i(w,h);
-	glTexCoord2f(1.0, 1.0); glVertex2i(w,-h);
-	glEnd();
-	glPopMatrix();
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_ALPHA_TEST);
-	//=================================================
-
-	//=================================================
-	//Exit Display=====================================
-	//=================================================
-	h = 50;
-	w = 75;
-	glPushMatrix();
-	glColor3f(1.0,1.0,1.0);
-	glTranslatef(gl.xres/2, gl.yres*0.2, 0);
-	glBindTexture(GL_TEXTURE_2D, exitTexture);
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.0f);
-	glColor4ub(255,255,255,255);
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, 1.0); glVertex2i(-w,-h);
-	glTexCoord2f(0.0, 0.0); glVertex2i(-w,h);
-	glTexCoord2f(1.0, 0.0); glVertex2i(w,h);
-	glTexCoord2f(1.0, 1.0); glVertex2i(w,-h);
-	glEnd();
-	glPopMatrix();
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_ALPHA_TEST);
-	//=================================================
-
-
-
-
-
-
-	//start_menu(gl.xres, gl.yres);
+	start_menu(gl.xres, gl.yres);
 
 	//logo(gl.xres, gl.yres);
 
 	//glBindTexture(GL_TEXTURE_2D, 0);
 	//glDisable(GL_ALPHA_TEST);	
 }
+
 
 
