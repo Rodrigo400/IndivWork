@@ -161,6 +161,7 @@ bool display_settingsmenu = false;
 bool display_highscoresmenu = false;
 bool display_creditsmenu = false;
 bool display_characterselectionmenu = false;
+bool display_levelselectionmenu = false;
 
 //---------------------------------------------------------
 
@@ -516,6 +517,9 @@ void render(void)
 	if (display_characterselectionmenu)
 	{
 		characterselection_menu(gl.xres, gl.yres);
+		/*if (display_characterselectionmenu && display_levelselectionmenu == true)
+			levelselection_menu(gl.xres, gl.yres);
+			*/
 	}
 
 }

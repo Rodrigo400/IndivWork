@@ -58,6 +58,7 @@ extern bool display_settingsmenu;
 extern bool display_highscoresmenu;
 extern bool display_creditsmenu;
 extern bool display_characterselectionmenu;
+extern bool display_levelselectionmenu;
 
 void start_menu(int xres, int yres)
 {
@@ -386,6 +387,20 @@ void characterselection_menu(int xres, int yres)
 	glBindTexture(GL_TEXTURE_2D, 0);
 	//glDisable(GL_ALPHA_TEST);
 	//=================================================
+	
+	/*if (keys[XK_Return])
+	{
+		if (menu_position == 1)
+		{
+			display_characterselectionmenu = false;
+			display_levelselectionmenu = true;
+		}
+		else if (menu_position == 2)
+		{
+			display_characterselectionmenu = false;
+			display_levelselectionmenu = true;
+		}
+	}*/
 }
 
 void levelselection_menu(int xres, int yres)
@@ -451,7 +466,7 @@ void levelselection_menu(int xres, int yres)
 	glColor3f(1.0,1.0,1.0);
 	glTranslatef(xres*0.75, yres*0.5, 0);
 	glBindTexture(GL_TEXTURE_2D, frameTexture);
-	glEnable(GL_ALPHA_TEST);
+	//glEnable(GL_ALPHA_TEST);
 	glAlphaFunc(GL_GREATER, 0.0f);
 	glColor4ub(255,255,255,255);
 	glBegin(GL_QUADS);
@@ -462,7 +477,7 @@ void levelselection_menu(int xres, int yres)
 	glEnd();
 	glPopMatrix();
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_ALPHA_TEST);
+	//glDisable(GL_ALPHA_TEST);
 	//=================================================
 	
 	//=================================================
@@ -474,7 +489,7 @@ void levelselection_menu(int xres, int yres)
 	glColor3f(1.0,1.0,1.0);
 	glTranslatef(xres*0.75, yres*0.5, 0);
 	glBindTexture(GL_TEXTURE_2D, frameTexture);
-	glEnable(GL_ALPHA_TEST);
+	//glEnable(GL_ALPHA_TEST);
 	glAlphaFunc(GL_GREATER, 0.0f);
 	glColor4ub(255,255,255,255);
 	glBegin(GL_QUADS);
@@ -485,7 +500,7 @@ void levelselection_menu(int xres, int yres)
 	glEnd();
 	glPopMatrix();
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_ALPHA_TEST);
+	//glDisable(GL_ALPHA_TEST);
 	//=================================================
 }
 
