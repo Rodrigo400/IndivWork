@@ -30,8 +30,9 @@
 #include <X11/keysym.h>
 #include <GL/glx.h>
 #include "ppm.h"
-#include "ppm.cpp"
+//#include "ppm.cpp"
 #include "fonts.h"
+#include "game.h"
 
 using namespace std;
 
@@ -45,6 +46,7 @@ void settings_menu(int, int);
 void view_highscores();
 void credits_screen(int, int); 
 
+/*
 extern Ppmimage *logoImage;
 extern Ppmimage *playImage;
 extern Ppmimage *settingsImage;
@@ -77,35 +79,37 @@ extern bool display_highscoresmenu;
 extern bool display_creditsmenu;
 extern bool display_characterselectionmenu;
 extern bool display_levelselectionmenu;
+*/
+
 
 void start_menu(int xres, int yres)
 {
-    display_startmenu = 1;
+    gl.display_startmenu = 1;
 
     int highlight_x;
     int highlight_y;
 
-    if (menu_position == 1)
+    if (gl.menu_position == 1)
     {
 	highlight_x = xres/2;
 	highlight_y = yres*0.6;
     }
-    else if (menu_position == 2)
+    else if (gl.menu_position == 2)
     {
 	highlight_x = xres/2;
 	highlight_y = yres*0.5;
     }
-    else if (menu_position == 3)
+    else if (gl.menu_position == 3)
     {
 	highlight_x = xres/2;
 	highlight_y = yres*0.4;
     }
-    else if (menu_position == 4)
+    else if (gl.menu_position == 4)
     {
 	highlight_x = xres/2;
 	highlight_y = yres*0.3;
     }
-    else if (menu_position == 5)
+    else if (gl.menu_position == 5)
     {
 	highlight_x = xres/2;
 	highlight_y = yres*0.2;
@@ -120,7 +124,7 @@ void start_menu(int xres, int yres)
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
     glTranslatef(highlight_x, highlight_y, 0);
-    glBindTexture(GL_TEXTURE_2D, texthighlightTexture);
+    glBindTexture(GL_TEXTURE_2D, gl.texthighlightTexture);
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
@@ -143,7 +147,7 @@ void start_menu(int xres, int yres)
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
     glTranslatef(xres/2, yres*0.8, 0);
-    glBindTexture(GL_TEXTURE_2D, logoTexture);
+    glBindTexture(GL_TEXTURE_2D, gl.logoTexture);
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
@@ -166,7 +170,7 @@ void start_menu(int xres, int yres)
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
     glTranslatef(xres/2, yres*0.6, 0);
-    glBindTexture(GL_TEXTURE_2D, playTexture);
+    glBindTexture(GL_TEXTURE_2D, gl.playTexture);
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
@@ -189,7 +193,7 @@ void start_menu(int xres, int yres)
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
     glTranslatef(xres/2, yres*0.5, 0);
-    glBindTexture(GL_TEXTURE_2D, settingsTexture);
+    glBindTexture(GL_TEXTURE_2D, gl.settingsTexture);
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
@@ -212,7 +216,7 @@ void start_menu(int xres, int yres)
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
     glTranslatef(xres/2, yres*0.4, 0);
-    glBindTexture(GL_TEXTURE_2D, highscoresTexture);
+    glBindTexture(GL_TEXTURE_2D, gl.highscoresTexture);
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
@@ -235,7 +239,7 @@ void start_menu(int xres, int yres)
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
     glTranslatef(xres/2, yres*0.3, 0);
-    glBindTexture(GL_TEXTURE_2D, creditsTexture);
+    glBindTexture(GL_TEXTURE_2D, gl.creditsTexture);
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
@@ -258,7 +262,7 @@ void start_menu(int xres, int yres)
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
     glTranslatef(xres/2, yres*0.2, 0);
-    glBindTexture(GL_TEXTURE_2D, exitTexture);
+    glBindTexture(GL_TEXTURE_2D, gl.exitTexture);
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
@@ -273,49 +277,49 @@ void start_menu(int xres, int yres)
     glDisable(GL_ALPHA_TEST);
     //=================================================
 
-    if (keys[XK_Return])
+    if (gl.keys[XK_Return])
     {
-	if (menu_position == 1)
+	if (gl.menu_position == 1)
 	{
-	    display_startmenu = false;
-	    display_characterselectionmenu = true;
+	    gl.display_startmenu = false;
+	    gl.display_characterselectionmenu = true;
 	}
-	else if (menu_position == 2)
+	else if (gl.menu_position == 2)
 	{
-	    display_startmenu = false;
-	    display_settingsmenu = true;
+	    gl.display_startmenu = false;
+	    gl.display_settingsmenu = true;
 	}
-	else if (menu_position == 3)
+	else if (gl.menu_position == 3)
 	{
-	    display_startmenu = false;
-	    display_highscoresmenu = true;
+	    gl.display_startmenu = false;
+	    gl.display_highscoresmenu = true;
 	}
-	else if (menu_position == 4)
+	else if (gl.menu_position == 4)
 	{
-	    display_startmenu = false;
-	    display_creditsmenu = true;
+	    gl.display_startmenu = false;
+	    gl.display_creditsmenu = true;
 	}
-	else if (menu_position == 5)
+	else if (gl.menu_position == 5)
 	{
-	    display_startmenu = false;
-	    done = 1;
+	    gl.display_startmenu = false;
+	    gl.done = 1;
 	}
     }	
 }
 
 void characterselection_menu(int xres, int yres)
 {
-    display_startmenu = false;
+    gl.display_startmenu = false;
 
     int highlight_x;
     int highlight_y;
 
-    if (menu_position == 1)
+    if (gl.menu_position == 1)
     {
 	highlight_x = xres*0.25;
 	highlight_y = yres*0.5;
     }
-    else if (menu_position == 2)
+    else if (gl.menu_position == 2)
     {
 	highlight_x = xres*0.75;
 	highlight_y = yres*0.5;
@@ -326,7 +330,7 @@ void characterselection_menu(int xres, int yres)
     //=================================================
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
-    glBindTexture(GL_TEXTURE_2D, characterselectionTexture);
+    glBindTexture(GL_TEXTURE_2D, gl.characterselectionTexture);
     //glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
@@ -349,7 +353,7 @@ void characterselection_menu(int xres, int yres)
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
     glTranslatef(highlight_x, highlight_y, 0);
-    glBindTexture(GL_TEXTURE_2D, texthighlightTexture);
+    glBindTexture(GL_TEXTURE_2D, gl.texthighlightTexture);
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
@@ -372,7 +376,7 @@ void characterselection_menu(int xres, int yres)
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
     glTranslatef(xres*0.25, yres*0.5, 0);
-    glBindTexture(GL_TEXTURE_2D, frameTexture);
+    glBindTexture(GL_TEXTURE_2D, gl.frameTexture);
     //glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
@@ -395,7 +399,7 @@ void characterselection_menu(int xres, int yres)
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
     glTranslatef(xres*0.75, yres*0.5, 0);
-    glBindTexture(GL_TEXTURE_2D, frameTexture);
+    glBindTexture(GL_TEXTURE_2D, gl.frameTexture);
     //glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
@@ -430,12 +434,12 @@ void levelselection_menu(int xres, int yres)
     int highlight_x;
     int highlight_y;
 
-    if (menu_position == 1)
+    if (gl.menu_position == 1)
     {
 	highlight_x = xres*0.25;
 	highlight_y = yres*0.5;
     }
-    else if (menu_position == 2)
+    else if (gl.menu_position == 2)
     {
 	highlight_x = xres*0.75;
 	highlight_y = yres*0.5;
@@ -445,7 +449,7 @@ void levelselection_menu(int xres, int yres)
     //Background Display for Level Selection===========
     //=================================================
     glColor3f(1.0,1.0,1.0);
-    glBindTexture(GL_TEXTURE_2D, levelselectionTexture);
+    glBindTexture(GL_TEXTURE_2D, gl.levelselectionTexture);
     glBegin(GL_QUADS);
     glTexCoord2f(0.0, 1.0); glVertex2i(0,0);
     glTexCoord2f(0.0, 0.0); glVertex2i(0,yres);
@@ -464,7 +468,7 @@ void levelselection_menu(int xres, int yres)
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
     glTranslatef(highlight_x, highlight_y, 0);
-    glBindTexture(GL_TEXTURE_2D, texthighlightTexture);
+    glBindTexture(GL_TEXTURE_2D, gl.texthighlightTexture);
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
@@ -487,7 +491,7 @@ void levelselection_menu(int xres, int yres)
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
     glTranslatef(xres*0.75, yres*0.5, 0);
-    glBindTexture(GL_TEXTURE_2D, frameTexture);
+    glBindTexture(GL_TEXTURE_2D, gl.frameTexture);
     //glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
@@ -510,7 +514,7 @@ void levelselection_menu(int xres, int yres)
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
     glTranslatef(xres*0.75, yres*0.5, 0);
-    glBindTexture(GL_TEXTURE_2D, frameTexture);
+    glBindTexture(GL_TEXTURE_2D, gl.frameTexture);
     //glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
@@ -560,30 +564,30 @@ void convertpng2ppm(void)
 
 void getImage(void)
 {
-    logoImage = ppm6GetImage("./images/OgirdorLogo.ppm");
-    playImage = ppm6GetImage("./images/Play.ppm");
-    settingsImage = ppm6GetImage("./images/Settings.ppm");
-    highscoresImage = ppm6GetImage("./images/HighScores.ppm");
-    creditsImage = ppm6GetImage("./images/Credits.ppm");
-    exitImage = ppm6GetImage("./images/Exit.ppm");
-    texthighlightImage = ppm6GetImage("./images/TextHighlight.ppm");
-    levelselectionImage = ppm6GetImage("./images/LevelSelection.ppm");
-    characterselectionImage = ppm6GetImage("./images/CharacterSelection.ppm");
-    frameImage = ppm6GetImage("./images/Frame.ppm");
+    gl.logoImage = ppm6GetImage("./images/OgirdorLogo.ppm");
+    gl.playImage = ppm6GetImage("./images/Play.ppm");
+    gl.settingsImage = ppm6GetImage("./images/Settings.ppm");
+    gl.highscoresImage = ppm6GetImage("./images/HighScores.ppm");
+    gl.creditsImage = ppm6GetImage("./images/Credits.ppm");
+    gl.exitImage = ppm6GetImage("./images/Exit.ppm");
+    gl.texthighlightImage = ppm6GetImage("./images/TextHighlight.ppm");
+    gl.levelselectionImage = ppm6GetImage("./images/LevelSelection.ppm");
+    gl.characterselectionImage = ppm6GetImage("./images/CharacterSelection.ppm");
+    gl.frameImage = ppm6GetImage("./images/Frame.ppm");
 }
 
 void generateTextures(void)
 {
-    glGenTextures(1, &logoTexture);
-    glGenTextures(1, &playTexture);
-    glGenTextures(1, &settingsTexture);
-    glGenTextures(1, &highscoresTexture);		
-    glGenTextures(1, &creditsTexture);
-    glGenTextures(1, &exitTexture);
-    glGenTextures(1, &texthighlightTexture);
-    glGenTextures(1, &levelselectionTexture);
-    glGenTextures(1, &characterselectionTexture);
-    glGenTextures(1, &frameTexture);
+    glGenTextures(1, &gl.logoTexture);
+    glGenTextures(1, &gl.playTexture);
+    glGenTextures(1, &gl.settingsTexture);
+    glGenTextures(1, &gl.highscoresTexture);		
+    glGenTextures(1, &gl.creditsTexture);
+    glGenTextures(1, &gl.exitTexture);
+    glGenTextures(1, &gl.texthighlightTexture);
+    glGenTextures(1, &gl.levelselectionTexture);
+    glGenTextures(1, &gl.characterselectionTexture);
+    glGenTextures(1, &gl.frameTexture);
 }
 
 void cleanupPPM(void)

@@ -1,29 +1,3 @@
-// Main Function of Game
-
-
-// Declare GLuint Textures
-
-
-// Declare PPM Images
-
-
-// Removing PPM Images
-
-
-// Converting PPM Images
-
-
-// Getting PPM Images
-
-
-// Generating Textures 
-
-
-// Use functions to BindTextures and Display
-
-
-// Core Functions such as check_keys, render
-
 
 //modified by: Rodrigo Garcia-Novoa
 //date modified: 6/12/17
@@ -49,7 +23,8 @@
 //#include "log.h"
 #include "ppm.h"
 #include "fonts.h"
-#include "rodrigoG.h"
+//#include "rodrigoG.h"
+#include "game.h"
 
 
 //defined types
@@ -70,6 +45,10 @@ typedef Flt	Matrix[4][4];
 const float timeslice = 1.0f;
 const float gravity = -0.2f;
 #define ALPHA 1
+
+
+Global gl;
+
 
 //X Windows variables
 Display *dpy;
@@ -116,22 +95,73 @@ class Timers {
 } timers;
 //-----------------------------------------------------------------------------
 
-class Global
+/*class Global
 {
     public:
+	int done;
+	int keys[65536];
+	int menu_position;
 	int xres, yres;
-	//int done;
+
+	Ppmimage *logoImage;
+	Ppmimage *playImage;
+	Ppmimage *settingsImage;
+	Ppmimage *highscoresImage;
+	Ppmimage *creditsImage;
+	Ppmimage *exitImage;
+	Ppmimage *texthighlightImage;
+	Ppmimage *levelselectionImage;
+	Ppmimage *characterselectionImage;
+	Ppmimage *frameImage;
+	
+	GLuint logoTexture;
+	GLuint playTexture;
+	GLuint settingsTexture;
+	GLuint highscoresTexture;
+	GLuint creditsTexture;
+	GLuint exitTexture;
+	GLuint texthighlightTexture;
+	GLuint levelselectionTexture;
+	GLuint characterselectionTexture;
+	GLuint frameTexture;
+	
+	bool display_startmenu;
+	bool display_settingsmenu;
+	bool display_highscoresmenu;
+	bool display_creditsmenu;
+	bool display_characterselectionmenu;
+	bool display_levelselectionmenu;
+
 	Global()
 	{
 	    xres = 800;
 	    yres = 600;
-	    //done = 0;
+	    done = 0;
+	    menu_position = 1;
+
+	        logoImage = NULL;
+		playImage = NULL;
+		settingsImage = NULL;
+		highscoresImage = NULL;
+		creditsImage = NULL;
+		exitImage = NULL;
+		texthighlightImage = NULL;
+		levelselectionImage = NULL;
+		characterselectionImage = NULL;
+		frameImage = NULL;
+	
+		display_startmenu = false;
+		display_settingsmenu = false;
+		display_highscoresmenu = false;
+		display_creditsmenu = false;
+		display_characterselectionmenu = false;
+		display_levelselectionmenu = false;
 	}
-} gl;
+} gl;*/
 
 
 //---------------------------------------------------------
-//Global
+/*Global
 Ppmimage *logoImage = NULL;
 Ppmimage *playImage = NULL;
 Ppmimage *settingsImage = NULL;
@@ -163,14 +193,14 @@ bool display_highscoresmenu = false;
 bool display_creditsmenu = false;
 bool display_characterselectionmenu = false;
 bool display_levelselectionmenu = false;
-
+*/
 //---------------------------------------------------------
 
 int main(void)
 {
     initXWindows();
     initOpengl();
-    while (!done) {
+    while (!gl.done) {
 	while (XPending(dpy)) {
 	    XEvent e;
 	    XNextEvent(dpy, &e);
@@ -307,12 +337,12 @@ void initOpengl(void)
 
     //===============================================================
     // Logo
-    int w = logoImage->width;
-    int h = logoImage->height;	
-    glBindTexture(GL_TEXTURE_2D, logoTexture);
+    int w = gl.logoImage->width;
+    int h = gl.logoImage->height;	
+    glBindTexture(GL_TEXTURE_2D, gl.logoTexture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    unsigned char *logoData = buildAlphaData(logoImage);	
+    unsigned char *logoData = buildAlphaData(gl.logoImage);	
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
 	    GL_RGBA, GL_UNSIGNED_BYTE, logoData);
     free(logoData);
@@ -321,12 +351,12 @@ void initOpengl(void)
 
     //===============================================================
     // Play
-    w = playImage->width;
-    h = playImage->height;	
-    glBindTexture(GL_TEXTURE_2D, playTexture);
+    w = gl.playImage->width;
+    h = gl.playImage->height;	
+    glBindTexture(GL_TEXTURE_2D, gl.playTexture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    unsigned char *playData = buildAlphaData(playImage);	
+    unsigned char *playData = buildAlphaData(gl.playImage);	
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
 	    GL_RGBA, GL_UNSIGNED_BYTE, playData);
     free(playData);
@@ -335,12 +365,12 @@ void initOpengl(void)
 
     //===============================================================
     // Settings
-    w = settingsImage->width;
-    h = settingsImage->height;	
-    glBindTexture(GL_TEXTURE_2D, settingsTexture);
+    w = gl.settingsImage->width;
+    h = gl.settingsImage->height;	
+    glBindTexture(GL_TEXTURE_2D, gl.settingsTexture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    unsigned char *settingsData = buildAlphaData(settingsImage);	
+    unsigned char *settingsData = buildAlphaData(gl.settingsImage);	
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
 	    GL_RGBA, GL_UNSIGNED_BYTE, settingsData);
     free(settingsData);
@@ -349,12 +379,12 @@ void initOpengl(void)
 
     //===============================================================
     // High Scores
-    w = highscoresImage->width;
-    h = highscoresImage->height;	
-    glBindTexture(GL_TEXTURE_2D, highscoresTexture);
+    w = gl.highscoresImage->width;
+    h = gl.highscoresImage->height;	
+    glBindTexture(GL_TEXTURE_2D, gl.highscoresTexture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    unsigned char *highscoresData = buildAlphaData(highscoresImage);	
+    unsigned char *highscoresData = buildAlphaData(gl.highscoresImage);	
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
 	    GL_RGBA, GL_UNSIGNED_BYTE, highscoresData);
     free(highscoresData);
@@ -363,12 +393,12 @@ void initOpengl(void)
 
     //===============================================================
     // Credits
-    w = creditsImage->width;
-    h = creditsImage->height;	
-    glBindTexture(GL_TEXTURE_2D, creditsTexture);
+    w = gl.creditsImage->width;
+    h = gl.creditsImage->height;	
+    glBindTexture(GL_TEXTURE_2D, gl.creditsTexture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    unsigned char *creditsData = buildAlphaData(creditsImage);	
+    unsigned char *creditsData = buildAlphaData(gl.creditsImage);	
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
 	    GL_RGBA, GL_UNSIGNED_BYTE, creditsData);
     free(creditsData);
@@ -377,12 +407,12 @@ void initOpengl(void)
 
     //===============================================================
     // Exit
-    w = exitImage->width;
-    h = exitImage->height;	
-    glBindTexture(GL_TEXTURE_2D, exitTexture);
+    w = gl.exitImage->width;
+    h = gl.exitImage->height;	
+    glBindTexture(GL_TEXTURE_2D, gl.exitTexture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    unsigned char *exitData = buildAlphaData(exitImage);	
+    unsigned char *exitData = buildAlphaData(gl.exitImage);	
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
 	    GL_RGBA, GL_UNSIGNED_BYTE, exitData);
     free(exitData);
@@ -391,12 +421,12 @@ void initOpengl(void)
 
     //===============================================================
     // Highlight
-    w = texthighlightImage->width;
-    h = texthighlightImage->height;	
-    glBindTexture(GL_TEXTURE_2D, texthighlightTexture);
+    w = gl.texthighlightImage->width;
+    h = gl.texthighlightImage->height;	
+    glBindTexture(GL_TEXTURE_2D, gl.texthighlightTexture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    unsigned char *texthighlightData = buildAlphaData(texthighlightImage);	
+    unsigned char *texthighlightData = buildAlphaData(gl.texthighlightImage);	
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
 	    GL_RGBA, GL_UNSIGNED_BYTE, texthighlightData);
     free(exitData);
@@ -405,12 +435,12 @@ void initOpengl(void)
 
     //===============================================================
     // Level Selection Background
-    w = levelselectionImage->width;
-    h = levelselectionImage->height;	
-    glBindTexture(GL_TEXTURE_2D, levelselectionTexture);
+    w = gl.levelselectionImage->width;
+    h = gl.levelselectionImage->height;	
+    glBindTexture(GL_TEXTURE_2D, gl.levelselectionTexture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    unsigned char *levelselectionData = buildAlphaData(levelselectionImage);	
+    unsigned char *levelselectionData = buildAlphaData(gl.levelselectionImage);	
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
 	    GL_RGBA, GL_UNSIGNED_BYTE, levelselectionData);
     free(levelselectionData);
@@ -419,12 +449,12 @@ void initOpengl(void)
 
     //===============================================================
     // Character Selection Background
-    w = characterselectionImage->width;
-    h = characterselectionImage->height;	
-    glBindTexture(GL_TEXTURE_2D, characterselectionTexture);
+    w = gl.characterselectionImage->width;
+    h = gl.characterselectionImage->height;	
+    glBindTexture(GL_TEXTURE_2D, gl.characterselectionTexture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    unsigned char *characterselectionData = buildAlphaData(characterselectionImage);	
+    unsigned char *characterselectionData = buildAlphaData(gl.characterselectionImage);	
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
 	    GL_RGBA, GL_UNSIGNED_BYTE, characterselectionData);
     free(characterselectionData);
@@ -433,12 +463,12 @@ void initOpengl(void)
 
     //===============================================================
     // Frame Background
-    w = frameImage->width;
-    h = frameImage->height;	
-    glBindTexture(GL_TEXTURE_2D, frameTexture);
+    w = gl.frameImage->width;
+    h = gl.frameImage->height;	
+    glBindTexture(GL_TEXTURE_2D, gl.frameTexture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    unsigned char *frameData = buildAlphaData(frameImage);	
+    unsigned char *frameData = buildAlphaData(gl.frameImage);	
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
 	    GL_RGBA, GL_UNSIGNED_BYTE, frameData);
     free(frameData);
@@ -453,13 +483,13 @@ void checkKeys(XEvent *e)
     int key = XLookupKeysym(&e->xkey, 0);
     if (e->type == KeyRelease)
     {
-	keys[key] = 0;
+	gl.keys[key] = 0;
 	if (key == XK_Shift_L || key == XK_Shift_R)
 	    return;
     }
     if (e->type == KeyPress)
     {
-	keys[key] = 1;
+	gl.keys[key] = 1;
 	if (key == XK_Shift_L || key == XK_Shift_R)
 	    return;
     }
@@ -469,27 +499,27 @@ void checkKeys(XEvent *e)
     switch(key)
     {
 	case XK_Escape:
-	    done = 1;
+	    gl.done = 1;
 	    break;
 	case XK_Down:
-	    if (display_startmenu 
-		    && !display_characterselectionmenu
-		    && menu_position != 5)
-		menu_position++;
-	    else if (display_characterselectionmenu 
-		    && !display_startmenu 
-		    && menu_position != 2)
-		menu_position++;
+	    if (gl.display_startmenu 
+		    && !gl.display_characterselectionmenu
+		    && gl.menu_position != 5)
+		gl.menu_position++;
+	    else if (gl.display_characterselectionmenu 
+		    && !gl.display_startmenu 
+		    && gl.menu_position != 2)
+		gl.menu_position++;
 	    break;
 	case XK_Up:
-	    if (display_startmenu 
-		    && !display_characterselectionmenu
-		    && menu_position != 1)
-		menu_position--;
-	    else if (display_characterselectionmenu 
-		    && !display_startmenu
-		    && menu_position != 1)
-		menu_position--;
+	    if (gl.display_startmenu 
+		    && !gl.display_characterselectionmenu
+		    && gl.menu_position != 1)
+		gl.menu_position--;
+	    else if (gl.display_characterselectionmenu 
+		    && !gl.display_startmenu
+		    && gl.menu_position != 1)
+		gl.menu_position--;
 	    break;
 	    //case XK_Return:
 	    //	if (menu_position == 1)
@@ -526,7 +556,7 @@ void checkKeys(XEvent *e)
 
 	start_menu(gl.xres, gl.yres);
 
-	if (display_characterselectionmenu)
+	if (gl.display_characterselectionmenu)
 	{
 	    characterselection_menu(gl.xres, gl.yres);
 	    /*if (display_characterselectionmenu && display_levelselectionmenu == true)
