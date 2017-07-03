@@ -54,9 +54,10 @@ const float gravity = -0.2f;
 #define ALPHA 1
 
 //===============================================
-// Global Instance
+// Global Instances
 //===============================================
 Global gl;
+UserInput input;
 Sprite turret, enemy1, mariEnemy;
 
 //X Windows variables
@@ -77,7 +78,10 @@ extern void logo(int,int);
 extern void start_menu(int, int);
 extern void characterselection_menu(int, int);
 extern void levelselection_menu(int, int);
-extern void playername_menu(int, int);
+extern void playername_menu(int, int, char [], UserInput &input);
+extern void getPlayerName(int, UserInput &input);
+extern void assign_playername(char [], UserInput &input);
+extern void PlayerStart(int, char [], UserInput &input);
 
 extern Ppmimage *characterImage(int);
 extern Ppmimage *turretImage();
@@ -612,51 +616,55 @@ void checkKeys(XEvent *e)
         return;
     }
 
+    if (gl.display_playername)
+        PlayerStart(key, input.player_name, input);
+
     switch(key)
     {
         case XK_Escape:
             gl.done = 1;
             break;
         case XK_Down:
-            if (gl.state == STARTMENU && gl.menu_position != 5) 
+            if (gl.display_startmenu && gl.menu_position != 5) 
+            {
+                gl.menu_position++;
+            }
+            else if ((!gl.display_startmenu && 
+                        (gl.display_characterselectionmenu ||
+                        gl.display_levelselectionmenu)) &&
+                    gl.menu_position != 2)
             {
                 gl.menu_position++;
             }
             break;
         case XK_Up:
-            if (gl.state == STARTMENU && gl.menu_position != 1) 
+            if ((gl.display_startmenu ||
+                        gl.display_characterselectionmenu || 
+                        gl.display_levelselectionmenu) &&
+                    gl.menu_position != 1) 
             {
                 gl.menu_position--;
             }
             break;
-        case XK_Left:
-            if ((gl.state == CHARACTERSELECTIONMENU || 
-                        gl.state == LEVELSELECTIONMENU) 
-                    && gl.menu_position != 1) 
-            {
-                gl.menu_position--;
-            }
-        case XK_Right:
-            if ((gl.state == CHARACTERSELECTIONMENU || 
-                        gl.state == LEVELSELECTIONMENU) 
-                    && gl.menu_position != 2) 
-            {
-                gl.menu_position++;
-            }
+            //case XK_Left:
+
+            //case XK_Right:
+
         case XK_Return:
-            if (gl.state == STARTMENU && gl.display_startmenu)
+            if (gl.display_startmenu)
             {
                 if (gl.menu_position == 1)
                 {
                     gl.display_startmenu = false;
                     gl.display_characterselectionmenu = true;
                     //gl.display_playernamemenu = true;
-                    gl.state = CHARACTERSELECTIONMENU;
+                    //gl.state = CHARACTERSELECTIONMENU;
                 }
                 else if (gl.menu_position == 2)
                 {
                     gl.display_startmenu = false;
                     gl.display_settingsmenu = true;
+                    gl.menu_position = 1;
                 }
                 else if (gl.menu_position == 3)
                 {
@@ -681,40 +689,39 @@ void checkKeys(XEvent *e)
               gl.display_characterselectionmenu = true;
               }*/
 
-            if (gl.state == CHARACTERSELECTIONMENU && 
-                    gl.display_characterselectionmenu)
+            if (gl.display_characterselectionmenu)
             {
                 if (gl.menu_position == 1)
                 {
                     gl.characterSelect = 1;
                     gl.display_characterselectionmenu = false;
                     gl.display_levelselectionmenu = true;
-                    gl.state = LEVELSELECTIONMENU;
+                    //gl.state = LEVELSELECTIONMENU;
                 }
                 else if (gl.menu_position == 2)
                 {
                     gl.characterSelect = 1;     // need to change
                     gl.display_characterselectionmenu = false;
                     gl.display_levelselectionmenu = true;
-                    gl.state = LEVELSELECTIONMENU;
+                    //gl.state = LEVELSELECTIONMENU;
                 }
             }
 
-            if (gl.state == LEVELSELECTIONMENU)
+            if (gl.display_levelselectionmenu)
             {
                 if (gl.menu_position == 1)
                 {
                     gl.levelSelect = 1;
                     gl.display_levelselectionmenu = false;
                     gl.display_levelselectionmenu = true;
-                    gl.state = GAMEPLAY;
+                    //gl.state = GAMEPLAY;
                 }
                 else if (gl.menu_position == 2)
                 {
                     gl.levelSelect = 1;     // need to change
                     gl.display_levelselectionmenu = false;
                     gl.display_levelselectionmenu = true;
-                    gl.state = GAMEPLAY;
+                    //gl.state = GAMEPLAY;
                 }
             }
     }
@@ -800,33 +807,58 @@ void physics(void)
 
 void render(void)
 {
-    if (gl.state == STARTMENU && gl.display_startmenu)
+    glClearColor(1.0,1.0,1.0,1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    if (gl.display_startmenu && !gl.display_characterselectionmenu 
+            && !gl.display_levelselectionmenu)
     {
         start_menu(gl.xres, gl.yres);
     }
-
-    //if (gl.state == CHARACTERSELECTIONMENU && gl.display_characterselectionmenu)
-    if (gl.state == GAMEPLAY)
+    if (gl.display_characterselectionmenu && !gl.display_startmenu
+            && !gl.display_levelselectionmenu)
     {
         characterselection_menu(gl.xres, gl.yres);
     }
-
-    if (gl.state == LEVELSELECTIONMENU && gl.display_levelselectionmenu)
+    if (!gl.display_startmenu && !gl.display_characterselectionmenu
+            && gl.display_levelselectionmenu)
     {
+        clearScreen();
         levelselection_menu(gl.xres, gl.yres);
     }
 
-    if (gl.state == GAMEPLAY)
+
+    //gl.display_characterselectionmenu = true;
+
+    //characterselection_menu(gl.xres, gl.yres);
+
+    /*if (gl.display_startmenu)
+      {
+      start_menu(gl.xres, gl.yres);
+      }
+
+    //if (gl.state == CHARACTERSELECTIONMENU && gl.display_characterselectionmenu)
+    if (gl.display_characterselectionmenu)
     {
-        clearScreen();	
-        renderBackground();
-        renderPlatform();
-        renderMainCharacter();
-        showTurret();
-        showenemy1();
-        show_mari();
-        healthBar(gl.xres, gl.yres);
+    characterselection_menu(gl.xres, gl.yres);
     }
+
+    if (gl.display_levelselectionmenu)
+    {
+    levelselection_menu(gl.xres, gl.yres);
+    }*/
+
+    /*if (gl.state == GAMEPLAY)
+      {
+      clearScreen();	
+      renderBackground();
+      renderPlatform();
+      renderMainCharacter();
+      showTurret();
+      showenemy1();
+      show_mari();
+      healthBar(gl.xres, gl.yres);
+      }*/
 
     /*switch (gl.state)
       {

@@ -19,6 +19,19 @@
 // of screens with flags.
 //===============================================
 
+//===============================================
+// Week 5 Progress
+//===============================================
+// Added Main Menu Background Image
+//===============================================
+
+//===============================================
+// Week 6 Progress
+//===============================================
+// Trying menu system logic
+// Finished Player name input for high scores
+//===============================================
+
 #include <iostream>
 #include <string.h>
 #include <math.h>
@@ -42,17 +55,23 @@ NameBox nb1;
 
 // Function Prototypes
 void start_menu(int, int);
-void playername_menu(int, int);
+void playername_menu(int, int, char [], UserInput &input);
 void characterselection_menu(int, int);
 void levelselection_menu(int, int);
 void settings_menu(int, int);
 void view_highscores();
 void credits_screen(int, int); 
+void getPlayerName(int, UserInput &input);
+void assign_playername(char [], UserInput &input);
+void PlayerStart(int, char [], UserInput &input);
 int menu_position_highlight;
 
 
 void start_menu(int xres, int yres)
 {
+    glClearColor(1.0,1.0,1.0,1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
     int highlight_x;
     int highlight_y;
 
@@ -270,7 +289,7 @@ void start_menu(int xres, int yres)
             gl.display_startmenu = false;
             gl.display_characterselectionmenu = true;
             //gl.display_playernamemenu = true;
-            gl.state = CHARACTERSELECTIONMENU;
+            //gl.state = CHARACTERSELECTIONMENU;
         }
         else if (gl.menu_position == 2)
         {
@@ -296,7 +315,7 @@ void start_menu(int xres, int yres)
     }	
 }
 
-void playername_menu(int xres, int yres)
+void playername_menu(int xres, int yres, char player_name[], UserInput &input)
 {
     //=================================================
     //Main Menu Background=============================
@@ -318,8 +337,8 @@ void playername_menu(int xres, int yres)
     //glDisable(GL_ALPHA_TEST);
     //=================================================
 
-    //unsigned int white = 0xffffff00;
-    unsigned int black = 0x00000000;
+    unsigned int white = 0xffffff;
+    //unsigned int black = 0x00000000;
     float w, h;
 
     //Namebox nb1;
@@ -329,7 +348,7 @@ void playername_menu(int xres, int yres)
     nb1.box[0].height = 15;
     nb1.box[0].center.x = xres/2;
     nb1.box[0].center.y = yres/2;
-    glColor3ub(252, 246, 179);
+    glColor3ub(0, 0, 255);
     s = &nb1.box[0];
     glPushMatrix();
     glTranslatef(s->center.x, s->center.y, 0);
@@ -342,23 +361,62 @@ void playername_menu(int xres, int yres)
     glVertex2i(w,-h);
     glEnd();
     glPopMatrix();
-
+    
     Rect r;
 
-    r.bot = s->center.y + 30;
+    r.bot = s->center.y - 8;
     r.left = s->center.x;
     r.center = s->center.y;
-    ggprint13(&r, 20, black, "%s");
+    ggprint13(&r, 20, white, "%s", input.player_name);
 
     if (gl.keys[XK_Return])
     {
         gl.display_playernamemenu = false;
         gl.display_characterselectionmenu = true;
+        if (player_name[0] == '\0')
+                return;
     }
+}
+
+void getPlayerName(int key, UserInput &input)
+{
+    if (key >= XK_a && key <= XK_z)
+    {
+        char keyin[2];
+        keyin[0] = key;
+        keyin[1] = '\0';
+        strcat(input.player_name, keyin);
+        return;
+    }
+    if (key == gl.keys[XK_BackSpace])
+    {
+        int slen = strlen(input.player_name);
+        if (slen > 0)
+        {
+            input.player_name[slen-1] = '\0';
+        }
+        return;
+    }
+}
+
+void PlayerStart(int key, char player_name[], UserInput &input)
+{
+    getPlayerName(key, input);
+    assign_playername(player_name, input);
+    //gl.display_playername = false;
+}
+
+void assign_playername(char player_name[], UserInput &input)
+{
+    for (int i = 0; i < 15; i++)
+        player_name[i] = input.player_name[i];
 }
 
 void characterselection_menu(int xres, int yres)
 {
+    glClearColor(1.0,1.0,1.0,1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     int highlight_x;
     int highlight_y;
 
@@ -389,7 +447,7 @@ void characterselection_menu(int xres, int yres)
     glTexCoord2f(1.0, 1.0); glVertex2i(xres,0);
     glEnd();
     glPopMatrix();
-    //glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
     //glDisable(GL_ALPHA_TEST);
     //=================================================
 
@@ -466,14 +524,14 @@ void characterselection_menu(int xres, int yres)
     {
         if (gl.menu_position == 1)
         {
-            gl.characterSelect = 1;
+            //gl.characterSelect = 1;
             gl.display_characterselectionmenu = false;
             gl.display_levelselectionmenu = true;
             gl.state = LEVELSELECTIONMENU;
         }
         else if (gl.menu_position == 2)
         {
-            gl.characterSelect = 1;        // need to change later
+            //gl.characterSelect = 1;        // need to change later
             gl.display_characterselectionmenu = false;
             gl.display_levelselectionmenu = true;
             gl.state = LEVELSELECTIONMENU;
@@ -500,8 +558,12 @@ void levelselection_menu(int xres, int yres)
     //=================================================
     //Background Display for Level Selection===========
     //=================================================
+    glPushMatrix();
     glColor3f(1.0,1.0,1.0);
     glBindTexture(GL_TEXTURE_2D, gl.levelselectionTexture);
+    //glEnable(GL_ENABLE_TEST);
+    glAlphaFunc(GL_GREATER, 0.0f);
+    glColor4ub(255,255,255,255);
     glBegin(GL_QUADS);
     glTexCoord2f(0.0, 1.0); glVertex2i(0,0);
     glTexCoord2f(0.0, 0.0); glVertex2i(0,yres);
@@ -509,7 +571,7 @@ void levelselection_menu(int xres, int yres)
     glTexCoord2f(1.0, 1.0); glVertex2i(xres,0);
     glEnd();
     glBindTexture(GL_TEXTURE_2D, 0);
-    glDisable(GL_ALPHA_TEST);
+    //glDisable(GL_ALPHA_TEST);
     //=================================================
 
     //=================================================
