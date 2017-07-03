@@ -78,6 +78,9 @@ extern void logo(int,int);
 extern void start_menu(int, int);
 extern void characterselection_menu(int, int);
 extern void levelselection_menu(int, int);
+extern void credits_screen(int, int);
+extern void shootingPoseLeft(int);
+extern void shootingPoseRight(int);
 extern void playername_menu(int, int, char [], UserInput &input);
 extern void getPlayerName(int, UserInput &input);
 extern void assign_playername(char [], UserInput &input);
@@ -813,7 +816,9 @@ void render(void)
     if (gl.display_startmenu && !gl.display_characterselectionmenu 
             && !gl.display_levelselectionmenu)
     {
-        start_menu(gl.xres, gl.yres);
+        //start_menu(gl.xres, gl.yres);
+        //characterselection_menu(gl.xres, gl.yres);
+        credits_screen(gl.xres, gl.yres);
     }
     if (gl.display_characterselectionmenu && !gl.display_startmenu
             && !gl.display_levelselectionmenu)
