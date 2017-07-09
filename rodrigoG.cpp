@@ -304,7 +304,8 @@ void start_menu(int xres, int yres)
         if (gl.menu_position == 1)
         {
             gl.display_startmenu = false;
-            gl.display_characterselectionmenu = true;
+            gl.display_playernamemenu = true;
+            //characterselection_menu(gl.xres, gl.yres);
             //gl.display_playernamemenu = true;
             //gl.state = CHARACTERSELECTIONMENU;
         }
@@ -334,6 +335,9 @@ void start_menu(int xres, int yres)
 
 void playername_menu(int xres, int yres, char player_name[], UserInput &input)
 {
+    glClearColor(0.0f,0.0f,0.0f,1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
     //=================================================
     //Main Menu Background=============================
     //=================================================
@@ -386,7 +390,7 @@ void playername_menu(int xres, int yres, char player_name[], UserInput &input)
     r.center = s->center.y;
     ggprint13(&r, 20, white, "%s", input.player_name);
 
-    if (gl.keys[XK_Return])
+    if (gl.keys[XK_y])
     {
         gl.display_playernamemenu = false;
         gl.display_characterselectionmenu = true;
@@ -416,13 +420,13 @@ void getPlayerName(int key, UserInput &input)
     }
 }
 
+
 void PlayerStart(int key, char player_name[], UserInput &input)
 {
     getPlayerName(key, input);
     assign_playername(player_name, input);
-    //gl.display_playername = false;
+    //gl.display_playername = true;
 }
-
 void assign_playername(char player_name[], UserInput &input)
 {
     for (int i = 0; i < 15; i++)
@@ -546,7 +550,7 @@ void characterselection_menu(int xres, int yres)
 
     if (gl.keys[XK_Return])
     {
-        if (gl.menu_position == 1)
+        if (gl.display_characterselectionmenu && gl.menu_position == 1)
         {
             //gl.characterSelect = 1;
             gl.display_characterselectionmenu = false;
@@ -685,18 +689,16 @@ void levelselection_menu(int xres, int yres)
             gl.levelSelect = 1;
             gl.display_characterselectionmenu = false;
             //gl.display_levelselectionmenu = false;
-            gl.state = GAMEPLAY;
+            //gl.state = GAMEPLAY;
         }
         else if (gl.menu_position == 2)
         {
             gl.levelSelect = 1;        // need to change later
             gl.display_characterselectionmenu = false;
             //gl.display_levelselectionmenu = false;
-            gl.state = GAMEPLAY;
+            //gl.state = GAMEPLAY;
         }
     }
-
-
 }
 
 void credits_screen(int xres, int yres)
@@ -743,6 +745,15 @@ void credits_screen(int xres, int yres)
     ggprint13(&r, 16, white, "Rodrigo Garcia-Novoa");
     ggprint13(&r, 16, white, "Eddie Velasco");
     ggprint13(&r, 16, white, "Simran Singh");
+
+    if (gl.keys[XK_BackSpace])
+    {
+        if (gl.display_creditsmenu)
+        {
+            gl.display_creditsmenu = false;
+            gl.display_startmenu = true;
+        }
+    } 
 }
 
 void shootingPoseRight(int xres)

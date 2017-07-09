@@ -627,6 +627,22 @@ void checkKeys(XEvent *e)
         case XK_Escape:
             gl.done = 1;
             break;
+        case XK_BackSpace:
+            if (gl.display_creditsmenu)
+            {
+                gl.display_creditsmenu = false;
+                gl.display_startmenu = true;
+            }
+            /*if (gl.display_playernamemenu)
+            {
+                int slen = strlen(input.player_name);
+                if (slen > 0)
+                {
+                    input.player_name[slen-1] = '\0';
+                }
+                return;
+            }*/
+            break;
         case XK_Down:
             if (gl.display_startmenu && gl.menu_position != 5) 
             {
@@ -634,7 +650,7 @@ void checkKeys(XEvent *e)
             }
             else if ((!gl.display_startmenu && 
                         (gl.display_characterselectionmenu ||
-                        gl.display_levelselectionmenu)) &&
+                         gl.display_levelselectionmenu)) &&
                     gl.menu_position != 2)
             {
                 gl.menu_position++;
@@ -659,7 +675,8 @@ void checkKeys(XEvent *e)
                 if (gl.menu_position == 1)
                 {
                     gl.display_startmenu = false;
-                    gl.display_characterselectionmenu = true;
+                    gl.display_playernamemenu = true;
+                    //characterselection_menu(gl.xres, gl.yres);
                     //gl.display_playernamemenu = true;
                     //gl.state = CHARACTERSELECTIONMENU;
                 }
@@ -686,12 +703,6 @@ void checkKeys(XEvent *e)
                 }
             }
 
-            /*if (gl.display_playernamemenu)
-              {
-              gl.display_playernamemenu = false;
-              gl.display_characterselectionmenu = true;
-              }*/
-
             if (gl.display_characterselectionmenu)
             {
                 if (gl.menu_position == 1)
@@ -716,15 +727,24 @@ void checkKeys(XEvent *e)
                 {
                     gl.levelSelect = 1;
                     gl.display_levelselectionmenu = false;
-                    gl.display_levelselectionmenu = true;
+                    //gl.display_levelselectionmenu = true;
                     //gl.state = GAMEPLAY;
                 }
                 else if (gl.menu_position == 2)
                 {
                     gl.levelSelect = 1;     // need to change
                     gl.display_levelselectionmenu = false;
-                    gl.display_levelselectionmenu = true;
+                    //gl.display_levelselectionmenu = true;
                     //gl.state = GAMEPLAY;
+                }
+            }
+            
+            if (gl.display_creditsmenu)
+            {
+                if (gl.keys[XK_BackSpace])
+                {
+                    gl.display_creditsmenu = false;
+                    gl.display_startmenu = true;
                 }
             }
     }
@@ -813,24 +833,96 @@ void render(void)
     glClearColor(1.0,1.0,1.0,1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (gl.display_startmenu && !gl.display_characterselectionmenu 
-            && !gl.display_levelselectionmenu)
+   /* 
+    cout << "Before Anything" << endl;
+    cout << "=================================================" << endl;
+    cout << "Menu Position:  " << gl.menu_position << endl;
+    cout << "Start menu:     " << gl.display_startmenu << endl;
+    cout << "Player menu:    " << gl.display_playernamemenu << endl;
+    cout << "Character menu: " << gl.display_characterselectionmenu << endl;
+    cout << "Level menu:     " << gl.display_levelselectionmenu << endl;
+    cout << "Credit menu:    " << gl.display_creditsmenu << endl;
+    cout << "=================================================" << endl;
+    */
+
+    if (gl.display_startmenu)
     {
-        //start_menu(gl.xres, gl.yres);
-        //characterselection_menu(gl.xres, gl.yres);
-        credits_screen(gl.xres, gl.yres);
+        start_menu(gl.xres, gl.yres);
+
+        cout << "I AM IN START MENU" << endl;
+        cout << "=================================================" << endl;
+        cout << "Menu Position:  " << gl.menu_position << endl;
+        cout << "Start menu:     " << gl.display_startmenu << endl;
+        cout << "Player menu:    " << gl.display_playernamemenu << endl;
+        cout << "Character menu: " << gl.display_characterselectionmenu << endl;
+        cout << "Level menu:     " << gl.display_levelselectionmenu << endl;
+        cout << "Credit menu:    " << gl.display_creditsmenu << endl;
+        cout << "=================================================" << endl;
     }
-    if (gl.display_characterselectionmenu && !gl.display_startmenu
-            && !gl.display_levelselectionmenu)
+    
+    if (gl.display_playernamemenu)
+    {
+        playername_menu(gl.xres, gl.yres, input.player_name, input);
+
+        cout << "I AM IN PLAYER NAME MENU" << endl;
+        cout << "=================================================" << endl;
+        cout << "Menu Position:  " << gl.menu_position << endl;
+        cout << "Start menu:     " << gl.display_startmenu << endl;
+        cout << "Player menu:    " << gl.display_playernamemenu << endl;
+        cout << "Character menu: " << gl.display_characterselectionmenu << endl;
+        cout << "Level menu:     " << gl.display_levelselectionmenu << endl;
+        cout << "Credit menu:    " << gl.display_creditsmenu << endl;
+        cout << "=================================================" << endl;
+    }
+
+    if (gl.display_characterselectionmenu)
     {
         characterselection_menu(gl.xres, gl.yres);
+
+        cout << "I AM IN CHARACTER SELECTION" << endl;
+        cout << "=================================================" << endl;
+        cout << "Menu Position:  " << gl.menu_position << endl;
+        cout << "Start menu:     " << gl.display_startmenu << endl;
+        cout << "Player menu:    " << gl.display_playernamemenu << endl;
+        cout << "Character menu: " << gl.display_characterselectionmenu << endl;
+        cout << "Level menu:     " << gl.display_levelselectionmenu << endl;
+        cout << "Credit menu:    " << gl.display_creditsmenu << endl;
+        cout << "=================================================" << endl;
+    }
+
+    if (gl.display_creditsmenu)
+    {
+        credits_screen(gl.xres, gl.yres);
+
+        cout << "I AM IN CREDITS SCREEN" << endl;
+        cout << "=================================================" << endl;
+        cout << "Menu Position:  " << gl.menu_position << endl;
+        cout << "Start menu:     " << gl.display_startmenu << endl;
+        cout << "Player menu:    " << gl.display_playernamemenu << endl;
+        cout << "Character menu: " << gl.display_characterselectionmenu << endl;
+        cout << "Level menu:     " << gl.display_levelselectionmenu << endl;
+        cout << "Credit menu:    " << gl.display_creditsmenu << endl;
+        cout << "=================================================" << endl;
+    }
+
+    /*if (gl.display_startmenu && !gl.display_characterselectionmenu 
+      && !gl.display_levelselectionmenu)
+      {
+    //start_menu(gl.xres, gl.yres);
+    //characterselection_menu(gl.xres, gl.yres);
+    credits_screen(gl.xres, gl.yres);
+    }
+    if (gl.display_characterselectionmenu && !gl.display_startmenu
+    && !gl.display_levelselectionmenu)
+    {
+    characterselection_menu(gl.xres, gl.yres);
     }
     if (!gl.display_startmenu && !gl.display_characterselectionmenu
-            && gl.display_levelselectionmenu)
+    && gl.display_levelselectionmenu)
     {
-        clearScreen();
-        levelselection_menu(gl.xres, gl.yres);
-    }
+    clearScreen();
+    levelselection_menu(gl.xres, gl.yres);
+    }*/
 
 
     //gl.display_characterselectionmenu = true;
