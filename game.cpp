@@ -676,6 +676,7 @@ void checkKeys(XEvent *e)
                 {
                     gl.display_startmenu = false;
                     gl.display_playernamemenu = true;
+		    //gl.display_characterselectionmenu = true;
                     //characterselection_menu(gl.xres, gl.yres);
                     //gl.display_playernamemenu = true;
                     //gl.state = CHARACTERSELECTIONMENU;

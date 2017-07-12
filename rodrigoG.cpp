@@ -134,7 +134,7 @@ void start_menu(int xres, int yres)
     glTranslatef(highlight_x, highlight_y, 0);
     glBindTexture(GL_TEXTURE_2D, gl.texthighlightTexture);
     glEnable(GL_ALPHA_TEST);
-    glEnable(GL_TEXTURE_2D);
+    //glEnable(GL_TEXTURE_2D);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
     glBegin(GL_QUADS);
@@ -146,7 +146,7 @@ void start_menu(int xres, int yres)
     glPopMatrix();
     //glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_ALPHA_TEST);
-    glDisable(GL_TEXTURE_2D);
+    //glDisable(GL_TEXTURE_2D);
     //=================================================
 
     //=================================================
@@ -158,8 +158,8 @@ void start_menu(int xres, int yres)
     glColor3f(1.0,1.0,1.0);
     glTranslatef(xres/2, yres*0.8, 0);
     glBindTexture(GL_TEXTURE_2D, gl.logoTexture);
-    glEnable(GL_ALPHA_TEST);
-    glEnable(GL_TEXTURE_2D);
+    //glEnable(GL_ALPHA_TEST);
+    //glEnable(GL_TEXTURE_2D);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
     glBegin(GL_QUADS);
@@ -171,7 +171,7 @@ void start_menu(int xres, int yres)
     glPopMatrix();
     //glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_ALPHA_TEST);
-    glDisable(GL_TEXTURE_2D);
+    //glDisable(GL_TEXTURE_2D);
     //=================================================
 
     //=================================================
@@ -184,7 +184,7 @@ void start_menu(int xres, int yres)
     glTranslatef(xres/2, yres*0.6, 0);
     glBindTexture(GL_TEXTURE_2D, gl.playTexture);
     glEnable(GL_ALPHA_TEST);
-    glEnable(GL_TEXTURE_2D);
+    //glEnable(GL_TEXTURE_2D);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
     glBegin(GL_QUADS);
@@ -196,7 +196,7 @@ void start_menu(int xres, int yres)
     glPopMatrix();
     //glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_ALPHA_TEST);
-    glDisable(GL_TEXTURE_2D);
+    //glDisable(GL_TEXTURE_2D);
     //=================================================
 
     //=================================================
@@ -209,7 +209,7 @@ void start_menu(int xres, int yres)
     glTranslatef(xres/2, yres*0.5, 0);
     glBindTexture(GL_TEXTURE_2D, gl.settingsTexture);
     glEnable(GL_ALPHA_TEST);
-    glEnable(GL_TEXTURE_2D);
+    //glEnable(GL_TEXTURE_2D);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
     glBegin(GL_QUADS);
@@ -221,7 +221,7 @@ void start_menu(int xres, int yres)
     glPopMatrix();
     //glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_ALPHA_TEST);
-    glDisable(GL_TEXTURE_2D);
+    //glDisable(GL_TEXTURE_2D);
     //=================================================
 
     //=================================================
@@ -234,7 +234,7 @@ void start_menu(int xres, int yres)
     glTranslatef(xres/2, yres*0.4, 0);
     glBindTexture(GL_TEXTURE_2D, gl.highscoresTexture);
     glEnable(GL_ALPHA_TEST);
-    glEnable(GL_TEXTURE_2D);
+    //glEnable(GL_TEXTURE_2D);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
     glBegin(GL_QUADS);
@@ -246,7 +246,7 @@ void start_menu(int xres, int yres)
     glPopMatrix();
     //glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_ALPHA_TEST);
-    glDisable(GL_TEXTURE_2D);
+    //glDisable(GL_TEXTURE_2D);
     //=================================================
 
     //=================================================
@@ -259,7 +259,7 @@ void start_menu(int xres, int yres)
     glTranslatef(xres/2, yres*0.3, 0);
     glBindTexture(GL_TEXTURE_2D, gl.creditsTexture);
     glEnable(GL_ALPHA_TEST);
-    glEnable(GL_TEXTURE_2D);
+    //glEnable(GL_TEXTURE_2D);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
     glBegin(GL_QUADS);
@@ -271,7 +271,7 @@ void start_menu(int xres, int yres)
     glPopMatrix();
     //glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_ALPHA_TEST);
-    glDisable(GL_TEXTURE_2D);
+    //glDisable(GL_TEXTURE_2D);
     //=================================================
 
     //=================================================
@@ -284,7 +284,7 @@ void start_menu(int xres, int yres)
     glTranslatef(xres/2, yres*0.2, 0);
     glBindTexture(GL_TEXTURE_2D, gl.exitTexture);
     glEnable(GL_ALPHA_TEST);
-    glEnable(GL_TEXTURE_2D);
+    //glEnable(GL_TEXTURE_2D);
     glAlphaFunc(GL_GREATER, 0.0f);
     glColor4ub(255,255,255,255);
     glBegin(GL_QUADS);
@@ -296,7 +296,7 @@ void start_menu(int xres, int yres)
     glPopMatrix();
     //glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_ALPHA_TEST);
-    glDisable(GL_TEXTURE_2D);
+    //glDisable(GL_TEXTURE_2D);
     //=================================================
 
     if (gl.keys[XK_Return])
@@ -304,6 +304,7 @@ void start_menu(int xres, int yres)
         if (gl.menu_position == 1)
         {
             gl.display_startmenu = false;
+	    //gl.display_characterselectionmenu = true;
             gl.display_playernamemenu = true;
             //characterselection_menu(gl.xres, gl.yres);
             //gl.display_playernamemenu = true;
@@ -335,23 +336,28 @@ void start_menu(int xres, int yres)
 
 void playername_menu(int xres, int yres, char player_name[], UserInput &input)
 {
-    glClearColor(0.0f,0.0f,0.0f,1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glClearColor(1.0,1.0,1.0,1.0);
+    //glClear(GL_COLOR_BUFFER_BIT);
     
     //=================================================
     //Main Menu Background=============================
     //=================================================
     glPushMatrix();
-    glColor3f(1.0,1.0,1.0);
-    glBindTexture(GL_TEXTURE_2D, gl.mainmenubackgroundTexture);
+    glColor3f(0.5,1.0,1.0);
+    glBindTexture(GL_TEXTURE_2D, gl.exitTexture);
     //glEnable(GL_ALPHA_TEST);
-    glAlphaFunc(GL_GREATER, 0.0f);
-    glColor4ub(255,255,255,255);
+    //glEnable(GL_TEXTURE_2D);
+    //glAlphaFunc(GL_GREATER, 0.0f);
+    //glColor4ub(255,255,255,255);
     glBegin(GL_QUADS);
-    glTexCoord2f(0.0, 1.0); glVertex2i(0,0);
-    glTexCoord2f(0.0, 0.0); glVertex2i(0,yres);
+    glTexCoord2f(0.0, 1.0); glVertex2i(10,10);
+    glTexCoord2f(0.0, 0.0); glVertex2i(10,yres);
     glTexCoord2f(1.0, 0.0); glVertex2i(xres,yres);
-    glTexCoord2f(1.0, 1.0); glVertex2i(xres,0);
+    glTexCoord2f(1.0, 1.0); glVertex2i(xres,10);
+    //glVertex2i(10,10);
+    //glVertex2i(10,yres);
+    //glVertex2i(xres,yres);
+    //glVertex2i(xres,10);
     glEnd();
     glPopMatrix();
     //glBindTexture(GL_TEXTURE_2D, 0);
@@ -469,7 +475,7 @@ void characterselection_menu(int xres, int yres)
     glTexCoord2f(1.0, 1.0); glVertex2i(xres,0);
     glEnd();
     //glPopMatrix();
-    glBindTexture(GL_TEXTURE_2D, 0);
+    //glBindTexture(GL_TEXTURE_2D, 0);
     //glDisable(GL_ALPHA_TEST);
     //=================================================
 
