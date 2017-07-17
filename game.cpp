@@ -6,7 +6,7 @@ Rodrigo Garcia-Novoa
 Christian Capusi
 Eddie Velasco
 Cesar Loya
-Simran S.
+Simran Singh
 
 Original Framework by:
 Gordon Griesel
@@ -35,8 +35,7 @@ Gordon Griesel
 using namespace std;
 
 //defined types
-typedef double Flt;
-typedef double Vec[3];
+//typedef double Vec[3];
 typedef Flt Matrix[4][4];
 
 //macros
@@ -54,12 +53,13 @@ const float gravity = -0.2f;
 #define ALPHA 1
 
 //===============================================
-// Global Instances
+// Global Instance
 //===============================================
+Timers timers;
 Global gl;
 UserInput input;
-Sprite turret, enemy1, mariEnemy;
-
+Level lev;
+Sprite heart2, heart1, speedboost1, shield1, mainChar, turret, enemy1, mariEnemy;
 //X Windows variables
 Display *dpy;
 Window win;
@@ -76,6 +76,8 @@ void render(void);
 
 extern void logo(int,int);
 extern void start_menu(int, int);
+extern void tutorial_menu(int, int);
+extern void tutorial_menu2(int, int);
 extern void characterselection_menu(int, int);
 extern void levelselection_menu(int, int);
 extern void credits_screen(int, int);
@@ -85,6 +87,9 @@ extern void playername_menu(int, int, char [], UserInput &input);
 extern void getPlayerName(int, UserInput &input);
 extern void assign_playername(char [], UserInput &input);
 extern void PlayerStart(int, char [], UserInput &input);
+//extern void convertpng2ppm(void);
+//extern void getImage(void);
+//extern void generateTextures(void);
 
 extern Ppmimage *characterImage(int);
 extern Ppmimage *turretImage();
@@ -96,7 +101,7 @@ extern void shootStandRight(float,float,float,float,float,float);
 extern void shootStandLeft(float,float,float,float,float,float);
 extern void standRight(float,float,float,float,float,float);
 extern void standLeft(float,float,float,float,float,float);
-extern void renderMainCharacter();
+extern void renderChristianSprites();
 extern void clearScreen();
 extern void moveSpriteRight(Sprite *);
 extern void moveSpriteLeft(Sprite *);
@@ -107,34 +112,10 @@ extern void show_mari();
 extern void renderBackground();
 extern void renderPlatform();
 extern void healthBar(int, int);
+extern void renderTiles();
+extern void renderTimeDisplay();
 //-----------------------------------------------------------------------------
 //Setup timers
-class Timers
-{
-    public:
-        double physicsRate;
-        double oobillion;
-        struct timespec timeStart, timeEnd, timeCurrent;
-        struct timespec maincharacterTime;
-        Timers()
-        {
-            physicsRate = 1.0 / 30.0;
-            oobillion = 1.0 / 1e9;
-        }
-        double timeDiff(struct timespec *start, struct timespec *end)
-        {
-            return (double)(end->tv_sec - start->tv_sec ) +
-                (double)(end->tv_nsec - start->tv_nsec) * oobillion;
-        }
-        void timeCopy(struct timespec *dest, struct timespec *source)
-        {
-            memcpy(dest, source, sizeof(struct timespec));
-        }
-        void recordTime(struct timespec *t)
-        {
-            clock_gettime(CLOCK_REALTIME, t);
-        }
-} timers;
 //-----------------------------------------------------------------------------
 
 int main(void)
@@ -150,7 +131,7 @@ int main(void)
             checkResize(&e);
             //checkMouse(&e);
             checkKeys(&e);
-        } 
+        }
         physics();
         render();
         glXSwapBuffers(dpy, win);
@@ -165,8 +146,20 @@ void init()
     //put initial x coordinates of enemies here.
     //can be offscreen. You can also set y here
     enemy1.cx = 600;
+    enemy1.cy = 90;
     mariEnemy.cx = 100;
+    mariEnemy.cy = 90;
     turret.cx = 300;
+    turret.cy = 90;
+    mainChar.cy = 90;
+    shield1.cx = 650;
+    shield1.cy = 90;
+    heart1.cx = 700;
+    heart1.cy = 90;
+    heart2.cx = 800;
+    heart2.cy = 90;
+    speedboost1.cx= 750;
+    speedboost1.cy = 90;
 }
 
 void cleanupXWindows(void)
@@ -293,7 +286,7 @@ void initOpengl(void)
     system("convert ./images/OgirdorLogo.png ./images/OgirdorLogo.ppm");
     system("convert ./images/MainMenuBackground.png ./images/MainMenuBackground.ppm");
     system("convert ./images/Play.png ./images/Play.ppm");
-    system("convert ./images/Settings.png ./images/Settings.ppm");
+    system("convert ./images/Tutorial.png ./images/Tutorial.ppm");
     system("convert ./images/HighScores.png ./images/HighScores.ppm");
     system("convert ./images/Credits.png ./images/Credits.ppm");
     system("convert ./images/Exit.png ./images/Exit.ppm");
@@ -303,6 +296,20 @@ void initOpengl(void)
     system("convert ./images/Frame.png ./images/Frame.ppm");
     system("convert ./images/backgroundImage.png ./images/backgroundImage.ppm");
     system("convert ./images/platformImage.png ./images/platformImage.ppm");
+    system("convert ./images/AttackDmg.png ./images/AttackDmg.ppm");
+    system("convert ./images/BlueEnemy.png ./images/BlueEnemy.ppm");
+    system("convert ./images/GreenEnemy.png ./images/GreenEnemy.ppm");
+    system("convert ./images/HeartAdd.png ./images/HeartAdd.ppm");
+    system("convert ./images/RedEnemy.png ./images/RedEnemy.ppm");
+    system("convert ./images/Shield.png ./images/Shield.ppm");
+    system("convert ./images/SpeedBoost.png ./images/SpeedBoost.ppm");
+    system("convert ./images/TabKey.png ./images/TabKey.ppm");
+    system("convert ./images/LeftArrowKey.png ./images/LeftArrowKey.ppm");
+    system("convert ./images/RightArrowKey.png ./images/RightArrowKey.ppm");
+    system("convert ./images/SpacebarKey.png ./images/SpacebarKey.ppm");
+    system("convert ./images/UpArrowKey.png ./images/UpArrowKey.ppm");
+    system("convert ./images/EnterKey.png ./images/EnterKey.ppm");
+    system("convert ./images/BlueBox.png ./images/BlueBox.ppm");
 
     //===========================================================
     // Get Images	
@@ -311,7 +318,7 @@ void initOpengl(void)
     gl.logoImage = ppm6GetImage("./images/OgirdorLogo.ppm");
     gl.mainmenubackgroundImage = ppm6GetImage("./images/MainMenuBackground.ppm");
     gl.playImage = ppm6GetImage("./images/Play.ppm");
-    gl.settingsImage = ppm6GetImage("./images/Settings.ppm");
+    gl.tutorialImage = ppm6GetImage("./images/Tutorial.ppm");
     gl.highscoresImage = ppm6GetImage("./images/HighScores.ppm");
     gl.creditsImage = ppm6GetImage("./images/Credits.ppm");
     gl.exitImage = ppm6GetImage("./images/Exit.ppm");
@@ -324,6 +331,20 @@ void initOpengl(void)
     gl.mari_image = mari_image();
     gl.backgroundImage = ppm6GetImage("./images/backgroundImage.ppm");
     gl.platformImage = ppm6GetImage("./images/platformImage.ppm");
+    gl.attackdmgImage = ppm6GetImage("./images/AttackDmg.ppm");
+    gl.blueenemyImage = ppm6GetImage("./images/BlueEnemy.ppm");
+    gl.greenenemyImage = ppm6GetImage("./images/GreenEnemy.ppm");
+    gl.heartaddImage = ppm6GetImage("./images/HeartAdd.ppm");
+    gl.redenemyImage = ppm6GetImage("./images/RedEnemy.ppm");
+    gl.shieldImage = ppm6GetImage("./images/Shield.ppm");
+    gl.speedboostImage = ppm6GetImage("./images/SpeedBoost.ppm");
+    gl.tabkeyImage = ppm6GetImage("./images/TabKey.ppm");
+    gl.leftarrowkeyImage = ppm6GetImage("./images/LeftArrowKey.ppm");
+    gl.rightarrowkeyImage = ppm6GetImage("./images/RightArrowKey.ppm");
+    gl.spacebarkeyImage = ppm6GetImage("./images/SpacebarKey.ppm");
+    gl.uparrowkeyImage = ppm6GetImage("./images/UpArrowKey.ppm");
+    gl.enterkeyImage = ppm6GetImage("./images/EnterKey.ppm");
+    gl.blueboxImage = ppm6GetImage("./images/BlueBox.ppm");
     //===========================================================
 
     //===========================================================
@@ -336,7 +357,7 @@ void initOpengl(void)
     glGenTextures(1, &gl.mari_Texture);
     glGenTextures(1, &gl.logoTexture);
     glGenTextures(1, &gl.playTexture);
-    glGenTextures(1, &gl.settingsTexture);
+    glGenTextures(1, &gl.tutorialTexture);
     glGenTextures(1, &gl.highscoresTexture);
     glGenTextures(1, &gl.creditsTexture);
     glGenTextures(1, &gl.exitTexture);
@@ -346,6 +367,20 @@ void initOpengl(void)
     glGenTextures(1, &gl.frameTexture);
     glGenTextures(1, &gl.backgroundTexture);
     glGenTextures(1, &gl.platformTexture);
+    glGenTextures(1, &gl.attackdmgTexture);
+    glGenTextures(1, &gl.blueenemyTexture);
+    glGenTextures(1, &gl.greenenemyTexture);
+    glGenTextures(1, &gl.heartaddTexture);
+    glGenTextures(1, &gl.redenemyTexture);
+    glGenTextures(1, &gl.shieldTexture);
+    glGenTextures(1, &gl.speedboostTexture);
+    glGenTextures(1, &gl.tabkeyTexture);
+    glGenTextures(1, &gl.leftarrowkeyTexture);
+    glGenTextures(1, &gl.rightarrowkeyTexture);
+    glGenTextures(1, &gl.spacebarkeyTexture);
+    glGenTextures(1, &gl.uparrowkeyTexture);
+    glGenTextures(1, &gl.enterkeyTexture);
+    glGenTextures(1, &gl.blueboxTexture);
     //===========================================================
 
     //==============================================
@@ -384,10 +419,10 @@ void initOpengl(void)
     glBindTexture(GL_TEXTURE_2D, gl.turretTexture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    unsigned char *turretData = buildAlphaData(gl.turretImage);
+    unsigned char *turretstuff = buildAlphaData(gl.turretImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, 
-            GL_RGBA, GL_UNSIGNED_BYTE, turretData);
-    free(turretData);
+            GL_RGBA, GL_UNSIGNED_BYTE, turretstuff);
+    free(turretstuff);
     unlink("./images/Turret.ppm");
     //====================================================
 
@@ -398,10 +433,10 @@ void initOpengl(void)
     glBindTexture(GL_TEXTURE_2D, gl.enemy1Texture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    unsigned char *enemy1Data = buildAlphaData(gl.enemy1Image);
+    unsigned char *enemy1stuff = buildAlphaData(gl.enemy1Image);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, enemy1Data);
-    free(enemy1Data);
+            GL_RGBA, GL_UNSIGNED_BYTE, enemy1stuff);
+    free(enemy1stuff);
     unlink("./images/enemy1.ppm");
     //===================================================
 
@@ -448,17 +483,17 @@ void initOpengl(void)
     //===============================================================
 
     //===============================================================
-    // Settings
-    w = gl.settingsImage->width;
-    h = gl.settingsImage->height;
-    glBindTexture(GL_TEXTURE_2D, gl.settingsTexture);
+    // Tutorial
+    w = gl.tutorialImage->width;
+    h = gl.tutorialImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.tutorialTexture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    unsigned char *settingsData = buildAlphaData(gl.settingsImage);
+    unsigned char *tutorialData = buildAlphaData(gl.tutorialImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, settingsData);
-    free(settingsData);
-    unlink("./images/Settings.ppm");
+            GL_RGBA, GL_UNSIGNED_BYTE, tutorialData);
+    free(tutorialData);
+    unlink("./images/Tutorial.ppm");
     //===============================================================
 
     //===============================================================
@@ -574,9 +609,9 @@ void initOpengl(void)
     //===============================================================
 
     //===============================================================
-    //Level Platform
+    //Level Background
     w = gl.platformImage->width;
-    h = gl.platformImage->height;
+    h = gl.platformImage->height;	
     glBindTexture(GL_TEXTURE_2D, gl.platformTexture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
@@ -585,6 +620,201 @@ void initOpengl(void)
             GL_RGBA, GL_UNSIGNED_BYTE, platformData);
     free(platformData);
     unlink("./images/platformImage.ppm");
+    //===============================================================
+    //===============================================================
+    //Attack Dmg
+    w = gl.attackdmgImage->width;
+    h = gl.attackdmgImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.attackdmgTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *attackdmgData = buildAlphaData(gl.attackdmgImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, attackdmgData);
+    free(attackdmgData);
+    unlink("./images/attackdmgImage.ppm");
+    //===============================================================
+
+    //===============================================================
+    //Blue Enemy
+    w = gl.blueenemyImage->width;
+    h = gl.blueenemyImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.blueenemyTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *blueenemyData = buildAlphaData(gl.blueenemyImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, blueenemyData);
+    free(blueenemyData);
+    unlink("./images/blueenemyImage.ppm");
+    //===============================================================
+
+    //===============================================================
+    //Green Enemy
+    w = gl.greenenemyImage->width;
+    h = gl.greenenemyImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.greenenemyTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *greenenemyData = buildAlphaData(gl.greenenemyImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, greenenemyData);
+    free(greenenemyData);
+    unlink("./images/greenenemyImage.ppm");
+    //===============================================================
+
+    //===============================================================
+    //Heart Add
+    w = gl.heartaddImage->width;
+    h = gl.heartaddImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.heartaddTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *heartaddData = buildAlphaData(gl.heartaddImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, heartaddData);
+    free(heartaddData);
+    unlink("./images/heartaddImage.ppm");
+    //===============================================================
+
+    //===============================================================
+    //Red Enemy
+    w = gl.redenemyImage->width;
+    h = gl.redenemyImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.redenemyTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *redenemyData = buildAlphaData(gl.redenemyImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, redenemyData);
+    free(redenemyData);
+    unlink("./images/redenemyImage.ppm");
+    //===============================================================
+
+    //===============================================================
+    //Shield
+    w = gl.shieldImage->width;
+    h = gl.shieldImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.shieldTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *shieldData = buildAlphaData(gl.shieldImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, shieldData);
+    free(shieldData);
+    unlink("./images/shieldImage.ppm");
+    //===============================================================
+
+    //===============================================================
+    //Speed Boost
+    w = gl.speedboostImage->width;
+    h = gl.speedboostImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.speedboostTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *speedboostData = buildAlphaData(gl.speedboostImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, speedboostData);
+    free(speedboostData);
+    unlink("./images/speedboostImage.ppm");
+    //===============================================================
+
+    //===============================================================
+    //Tab Key
+    w = gl.tabkeyImage->width;
+    h = gl.tabkeyImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.tabkeyTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *tabkeyData = buildAlphaData(gl.tabkeyImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, tabkeyData);
+    free(tabkeyData);
+    unlink("./images/tabkeyImage.ppm");
+    //===============================================================
+
+    //===============================================================
+    //Left Arrow Key
+    w = gl.leftarrowkeyImage->width;
+    h = gl.leftarrowkeyImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.leftarrowkeyTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *leftarrowkeyData = buildAlphaData(gl.leftarrowkeyImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, leftarrowkeyData);
+    free(leftarrowkeyData);
+    unlink("./images/leftarrowkeyImage.ppm");
+    //===============================================================
+
+    //===============================================================
+    //Right Arrow Key
+    w = gl.rightarrowkeyImage->width;
+    h = gl.rightarrowkeyImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.rightarrowkeyTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *rightarrowkeyData = buildAlphaData(gl.rightarrowkeyImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, rightarrowkeyData);
+    free(rightarrowkeyData);
+    unlink("./images/rightarrowkeyImage.ppm");
+    //===============================================================
+
+    //===============================================================
+    //Spacebar Key
+    w = gl.spacebarkeyImage->width;
+    h = gl.spacebarkeyImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.spacebarkeyTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *spacebarkeyData = buildAlphaData(gl.spacebarkeyImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, spacebarkeyData);
+    free(spacebarkeyData);
+    unlink("./images/spacebarkeyImage.ppm");
+    //===============================================================
+
+    //===============================================================
+    //Up Arrow Key
+    w = gl.uparrowkeyImage->width;
+    h = gl.uparrowkeyImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.uparrowkeyTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *uparrowkeyData = buildAlphaData(gl.uparrowkeyImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, uparrowkeyData);
+    free(uparrowkeyData);
+    unlink("./images/uparrowkeyImage.ppm");
+    //===============================================================
+
+    //===============================================================
+    //Enter Key
+    w = gl.enterkeyImage->width;
+    h = gl.enterkeyImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.enterkeyTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *enterkeyData = buildAlphaData(gl.enterkeyImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, enterkeyData);
+    free(enterkeyData);
+    unlink("./images/enterkeyImage.ppm");
+    //===============================================================
+
+    //===============================================================
+    //Blue Box
+    w = gl.blueboxImage->width;
+    h = gl.blueboxImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.blueboxTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *blueboxData = buildAlphaData(gl.blueboxImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, blueboxData);
+    free(blueboxData);
+    unlink("./images/blueboxImage.ppm");
     //===============================================================
 
     //--------------------------------------------------------------------
@@ -619,131 +849,108 @@ void checkKeys(XEvent *e)
         return;
     }
 
-    if (gl.display_playername)
-        PlayerStart(key, input.player_name, input);
+    //if (gl.display_playername)
+    //PlayerStart(key, gl.p_name, input);
 
     switch(key)
     {
         case XK_Escape:
             gl.done = 1;
             break;
-        case XK_BackSpace:
-            if (gl.display_creditsmenu)
-            {
+        case XK_Tab:
+            if (gl.display_creditsmenu) {
                 gl.display_creditsmenu = false;
                 gl.display_startmenu = true;
             }
-            /*if (gl.display_playernamemenu)
-            {
-                int slen = strlen(input.player_name);
-                if (slen > 0)
-                {
-                    input.player_name[slen-1] = '\0';
-                }
-                return;
-            }*/
+            if (gl.display_tutorialmenu) {
+                gl.display_tutorialmenu = false;
+                gl.display_startmenu = true;
+            }
+            if (gl.display_tutorialmenu2) {
+                gl.display_tutorialmenu2 = false;
+                gl.display_tutorialmenu = true;
+            }
             break;
         case XK_Down:
-            if (gl.display_startmenu && gl.menu_position != 5) 
-            {
+            if (gl.display_startmenu && gl.menu_position != 5) {
                 gl.menu_position++;
-            }
-            else if ((!gl.display_startmenu && 
-                        (gl.display_characterselectionmenu ||
-                         gl.display_levelselectionmenu)) &&
-                    gl.menu_position != 2)
-            {
+            } else if ((gl.display_characterselectionmenu ||
+                        gl.display_levelselectionmenu) &&
+                    gl.menu_position != 2) {
                 gl.menu_position++;
             }
             break;
         case XK_Up:
             if ((gl.display_startmenu ||
-                        gl.display_characterselectionmenu || 
-                        gl.display_levelselectionmenu) &&
-                    gl.menu_position != 1) 
-            {
+                        gl.display_characterselectionmenu ||
+                        gl.display_levelselectionmenu)
+                    && gl.menu_position != 1) {
                 gl.menu_position--;
             }
             break;
-            //case XK_Left:
-
-            //case XK_Right:
-
         case XK_Return:
-            if (gl.display_startmenu)
-            {
-                if (gl.menu_position == 1)
-                {
+            if (gl.display_startmenu) {
+                if (gl.menu_position == 1){
                     gl.display_startmenu = false;
                     gl.display_playernamemenu = true;
-		    //gl.display_characterselectionmenu = true;
+                    gl.keys[XK_Return] = false;
+                    //gl.display_characterselectionmenu = true;
                     //characterselection_menu(gl.xres, gl.yres);
                     //gl.display_playernamemenu = true;
                     //gl.state = CHARACTERSELECTIONMENU;
-                }
-                else if (gl.menu_position == 2)
-                {
+                } else if (gl.menu_position == 2){
                     gl.display_startmenu = false;
-                    gl.display_settingsmenu = true;
-                    gl.menu_position = 1;
-                }
-                else if (gl.menu_position == 3)
-                {
+                    gl.display_tutorialmenu = true;
+                    gl.keys[XK_Return] = false;
+                    //gl.menu_position = 1;
+                } else if (gl.menu_position == 3) {
                     gl.display_startmenu = false;
                     gl.display_highscoresmenu = true;
-                }
-                else if (gl.menu_position == 4)
-                {
+                } else if (gl.menu_position == 4) {
                     gl.display_startmenu = false;
                     gl.display_creditsmenu = true;
-                }
-                else if (gl.menu_position == 5)
-                {
+                } else if (gl.menu_position == 5) {
                     gl.display_startmenu = false;
                     gl.done = 1;
                 }
             }
 
-            if (gl.display_characterselectionmenu)
-            {
-                if (gl.menu_position == 1)
-                {
+            /*if (gl.display_characterselectionmenu) {
+                if (gl.menu_position == 1) {
                     gl.characterSelect = 1;
                     gl.display_characterselectionmenu = false;
                     gl.display_levelselectionmenu = true;
+                    gl.keys[XK_Return] = false;
                     //gl.state = LEVELSELECTIONMENU;
-                }
-                else if (gl.menu_position == 2)
-                {
+                } else if (gl.menu_position == 2) {
                     gl.characterSelect = 1;     // need to change
                     gl.display_characterselectionmenu = false;
                     gl.display_levelselectionmenu = true;
+                    gl.keys[XK_Return] = false;
                     //gl.state = LEVELSELECTIONMENU;
                 }
-            }
+            }*/
 
-            if (gl.display_levelselectionmenu)
-            {
-                if (gl.menu_position == 1)
-                {
+            /*if (gl.display_levelselectionmenu) {
+                if (gl.menu_position == 1) {
                     gl.levelSelect = 1;
                     gl.display_levelselectionmenu = false;
+                    gl.display_startinggame = true;
+                    gl.keys[XK_Return] = false;
                     //gl.display_levelselectionmenu = true;
                     //gl.state = GAMEPLAY;
-                }
-                else if (gl.menu_position == 2)
-                {
+                } else if (gl.menu_position == 2) {
                     gl.levelSelect = 1;     // need to change
                     gl.display_levelselectionmenu = false;
+                    gl.display_startinggame = true;
+                    gl.keys[XK_Return] = false;
                     //gl.display_levelselectionmenu = true;
                     //gl.state = GAMEPLAY;
                 }
-            }
-            
-            if (gl.display_creditsmenu)
-            {
-                if (gl.keys[XK_BackSpace])
-                {
+            }*/
+
+            if (gl.display_creditsmenu) {
+                if (gl.keys[XK_Tab]) {
                     gl.display_creditsmenu = false;
                     gl.display_startmenu = true;
                 }
@@ -765,6 +972,10 @@ void physics(void)
             ++gl.maincharacterFrame;
 
             moveSpriteLeft(&mariEnemy);
+            moveSpriteLeft(&heart1);
+            moveSpriteLeft(&heart2);
+            moveSpriteLeft(&speedboost1);
+            moveSpriteLeft(&shield1);
             moveSpriteLeft(&turret);
             moveSpriteLeft(&enemy1);
 
@@ -784,6 +995,10 @@ void physics(void)
             ++gl.maincharacterFrame;
             mariEnemy.cx++;
             moveSpriteRight(&mariEnemy);
+            moveSpriteRight(&heart1);
+            moveSpriteRight(&heart2);
+            moveSpriteRight(&shield1);
+            moveSpriteRight(&speedboost1);
             moveSpriteRight(&turret);
             moveSpriteRight(&enemy1);
             if (gl.maincharacterFrame >= 8)
@@ -795,6 +1010,10 @@ void physics(void)
         //man is walking...
         //when time is up, advance the frame.
         moveSpriteLeft(&mariEnemy);
+        moveSpriteLeft(&heart1);
+        moveSpriteLeft(&heart2);
+        moveSpriteLeft(&shield1);
+        moveSpriteLeft(&speedboost1);
         moveSpriteLeft(&turret);
         moveSpriteLeft(&enemy1);
         timers.recordTime(&timers.timeCurrent);
@@ -808,11 +1027,23 @@ void physics(void)
                 gl.maincharacterFrame -= 8;
             timers.recordTime(&timers.maincharacterTime);
         }
+        for (int i=0; i<20; i++) {
+            gl.box[i].x -= 1.0 * (0.05 / gl.delay);
+            if (gl.box[i].x < -10.0)
+                gl.box[i].x += gl.xres + 10.0;
+            gl.camera[0] += 2.0/lev.tilesize[0] * (0.05 / gl.delay);
+            if (gl.camera[0] < 0.0)
+                gl.camera[0] = 0.0;
+        }
     }
     if (gl.walk || gl.keys[XK_Left]) {
         //man is walking...
         //when time is up, advance the frame.
         moveSpriteRight(&mariEnemy);
+        moveSpriteRight(&heart1);
+        moveSpriteRight(&heart2);
+        moveSpriteRight(&shield1);
+        moveSpriteRight(&speedboost1);
         moveSpriteRight(&turret);
         moveSpriteRight(&enemy1);
         timers.recordTime(&timers.timeCurrent);
@@ -826,217 +1057,66 @@ void physics(void)
                 gl.maincharacterFrame -= 8;
             timers.recordTime(&timers.maincharacterTime);
         }
+
+        for (int i=0; i<20; i++) {
+            gl.box[i].x += 1.0 * (0.05 / gl.delay);
+            if (gl.box[i].x > gl.xres + 10.0)
+                gl.box[i].x -= gl.xres + 10.0;
+            gl.camera[0] -= 2.0/lev.tilesize[0] * (0.05 / gl.delay);
+            if (gl.camera[0] < 0.0)
+                gl.camera[0] = 0.0;
+        }
     }
 }
 
 void render(void)
 {
-    glClearColor(1.0,1.0,1.0,1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-   /* 
-    cout << "Before Anything" << endl;
-    cout << "=================================================" << endl;
-    cout << "Menu Position:  " << gl.menu_position << endl;
-    cout << "Start menu:     " << gl.display_startmenu << endl;
-    cout << "Player menu:    " << gl.display_playernamemenu << endl;
-    cout << "Character menu: " << gl.display_characterselectionmenu << endl;
-    cout << "Level menu:     " << gl.display_levelselectionmenu << endl;
-    cout << "Credit menu:    " << gl.display_creditsmenu << endl;
-    cout << "=================================================" << endl;
-    */
-
-    if (gl.display_startmenu)
-    {
+    //clearScreen();
+    if (gl.display_startmenu) {
         start_menu(gl.xres, gl.yres);
-
-        cout << "I AM IN START MENU" << endl;
-        cout << "=================================================" << endl;
-        cout << "Menu Position:  " << gl.menu_position << endl;
-        cout << "Start menu:     " << gl.display_startmenu << endl;
-        cout << "Player menu:    " << gl.display_playernamemenu << endl;
-        cout << "Character menu: " << gl.display_characterselectionmenu << endl;
-        cout << "Level menu:     " << gl.display_levelselectionmenu << endl;
-        cout << "Credit menu:    " << gl.display_creditsmenu << endl;
-        cout << "=================================================" << endl;
+        cout << "start menu" << endl;
     }
-    
-    if (gl.display_playernamemenu)
-    {
+
+    if (gl.display_tutorialmenu) {
+        tutorial_menu(gl.xres, gl.yres);
+        cout << "tutorial one" << endl;
+    }
+
+    if (gl.display_tutorialmenu2) {
+        tutorial_menu2(gl.xres, gl.yres);
+        cout << "tutorial two" << endl;
+    }
+
+    if (gl.display_playernamemenu) {
         playername_menu(gl.xres, gl.yres, input.player_name, input);
-
-        cout << "I AM IN PLAYER NAME MENU" << endl;
-        cout << "=================================================" << endl;
-        cout << "Menu Position:  " << gl.menu_position << endl;
-        cout << "Start menu:     " << gl.display_startmenu << endl;
-        cout << "Player menu:    " << gl.display_playernamemenu << endl;
-        cout << "Character menu: " << gl.display_characterselectionmenu << endl;
-        cout << "Level menu:     " << gl.display_levelselectionmenu << endl;
-        cout << "Credit menu:    " << gl.display_creditsmenu << endl;
-        cout << "=================================================" << endl;
+        cout << "player name menu" << endl;
     }
 
-    if (gl.display_characterselectionmenu)
-    {
+    if (gl.display_characterselectionmenu) {
         characterselection_menu(gl.xres, gl.yres);
-
-        cout << "I AM IN CHARACTER SELECTION" << endl;
-        cout << "=================================================" << endl;
-        cout << "Menu Position:  " << gl.menu_position << endl;
-        cout << "Start menu:     " << gl.display_startmenu << endl;
-        cout << "Player menu:    " << gl.display_playernamemenu << endl;
-        cout << "Character menu: " << gl.display_characterselectionmenu << endl;
-        cout << "Level menu:     " << gl.display_levelselectionmenu << endl;
-        cout << "Credit menu:    " << gl.display_creditsmenu << endl;
-        cout << "=================================================" << endl;
+        cout << "character selection" << endl;
     }
 
-    if (gl.display_creditsmenu)
-    {
+    if (gl.display_levelselectionmenu) {
+        levelselection_menu(gl.xres, gl.yres);
+        cout << "level selection" << endl;
+    }
+
+    if (gl.display_creditsmenu) {
+        cout << "credit menu" << endl;
         credits_screen(gl.xres, gl.yres);
-
-        cout << "I AM IN CREDITS SCREEN" << endl;
-        cout << "=================================================" << endl;
-        cout << "Menu Position:  " << gl.menu_position << endl;
-        cout << "Start menu:     " << gl.display_startmenu << endl;
-        cout << "Player menu:    " << gl.display_playernamemenu << endl;
-        cout << "Character menu: " << gl.display_characterselectionmenu << endl;
-        cout << "Level menu:     " << gl.display_levelselectionmenu << endl;
-        cout << "Credit menu:    " << gl.display_creditsmenu << endl;
-        cout << "=================================================" << endl;
     }
 
-    /*if (gl.display_startmenu && !gl.display_characterselectionmenu 
-      && !gl.display_levelselectionmenu)
-      {
-    //start_menu(gl.xres, gl.yres);
-    //characterselection_menu(gl.xres, gl.yres);
-    credits_screen(gl.xres, gl.yres);
+    if (gl.display_startinggame) {
+        //clearScreen();    
+        renderBackground();
+        renderTiles();
+        //renderPlatform();
+        renderChristianSprites();
+        showTurret();
+        showenemy1();
+        show_mari();
+        healthBar(gl.xres, gl.yres);
+        renderTimeDisplay();
     }
-    if (gl.display_characterselectionmenu && !gl.display_startmenu
-    && !gl.display_levelselectionmenu)
-    {
-    characterselection_menu(gl.xres, gl.yres);
-    }
-    if (!gl.display_startmenu && !gl.display_characterselectionmenu
-    && gl.display_levelselectionmenu)
-    {
-    clearScreen();
-    levelselection_menu(gl.xres, gl.yres);
-    }*/
-
-
-    //gl.display_characterselectionmenu = true;
-
-    //characterselection_menu(gl.xres, gl.yres);
-
-    /*if (gl.display_startmenu)
-      {
-      start_menu(gl.xres, gl.yres);
-      }
-
-    //if (gl.state == CHARACTERSELECTIONMENU && gl.display_characterselectionmenu)
-    if (gl.display_characterselectionmenu)
-    {
-    characterselection_menu(gl.xres, gl.yres);
-    }
-
-    if (gl.display_levelselectionmenu)
-    {
-    levelselection_menu(gl.xres, gl.yres);
-    }*/
-
-    /*if (gl.state == GAMEPLAY)
-      {
-      clearScreen();	
-      renderBackground();
-      renderPlatform();
-      renderMainCharacter();
-      showTurret();
-      showenemy1();
-      show_mari();
-      healthBar(gl.xres, gl.yres);
-      }*/
-
-    /*switch (gl.state)
-      {
-      case STARTMENU:
-      start_menu(gl.xres, gl.yres);
-      break;
-      case CHARACTERSELECTIONMENU:
-      characterselection_menu(gl.xres, gl.yres);
-      break;
-      case LEVELSELECTIONMENU:
-      levelselection_menu(gl.xres, gl.yres);
-      break;
-      case GAMEPLAY:
-      clearScreen();	
-      renderBackground();
-      renderPlatform();
-      renderMainCharacter();
-      showTurret();
-      showenemy1();
-      show_mari();
-      healthBar(gl.xres, gl.yres);
-      break;
-      default:
-      break;
-      }*/
 }
-
-
-
-
-
-// Automatically show start menu
-/*if (gl.display_startmenu)
-  {
-  start_menu(gl.xres, gl.yres);
-  if (gl.display_startmenu && gl.menu_position == 1)
-  {
-  characterselection_menu(gl.xres, gl.yres);
-  if (gl.display_levelselectionmenu)
-  {
-  levelselection_menu(gl.xres, gl.yres);
-  if (gl.levelSelect == 1)
-  {
-  clearScreen();	
-  renderBackground();
-  renderPlatform();
-  renderMainCharacter();
-  showTurret();
-  showenemy1();
-  show_mari();
-  healthBar(gl.xres, gl.yres);
-  }
-  }
-  }
-  }*/
-
-/*if (gl.display_playernamemenu) 
-  {
-  playername_menu(gl.xres, gl.yres);
-  }
-
-  if (gl.display_characterselectionmenu)
-  {
-  characterselection_menu(gl.xres, gl.yres);
-  }    
-
-  if (gl.display_levelselectionmenu)
-  {
-  levelselection_menu(gl.xres, gl.yres);
-  }
-
-  if (gl.levelSelect == 1)
-  {
-  clearScreen();	
-  renderBackground();
-  renderPlatform();
-  renderMainCharacter();
-  showTurret();
-  showenemy1();
-  show_mari();
-  healthBar(gl.xres, gl.yres);
-  }
-  }*/
