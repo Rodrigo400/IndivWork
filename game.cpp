@@ -104,7 +104,7 @@ extern void shootStandRight(float,float,float,float,float,float);
 extern void shootStandLeft(float,float,float,float,float,float);
 extern void standRight(float,float,float,float,float,float);
 extern void standLeft(float,float,float,float,float,float);
-extern void renderChristianSprites();
+extern void renderChristianSprites(int);
 extern void christianInit();
 extern void particleMove();
 extern void clearScreen();
@@ -279,7 +279,7 @@ void initOpengl(void)
     //
 
     //---CHRISTIANS FUNCTION--------//
-    int characterSelect = 3; //Rodrigo, when you make selection in char selection, 
+    //int characterSelect = 3; //Rodrigo, when you make selection in char selection, 
     //store it in something similar
 
     // Convertpng2ppm
@@ -323,7 +323,7 @@ void initOpengl(void)
     //===========================================================
     // Get Images	
     //===========================================================
-    gl.maincharacterImage = characterImage(characterSelect);
+    //gl.maincharacterImage = characterImage(characterSelect);
     gl.maincharacter1Image = ppm6GetImage("./images/mainChar1.ppm");
     gl.maincharacter2Image = ppm6GetImage("./images/mainChar2.ppm"); 
     gl.maincharacter3Image = ppm6GetImage("./images/mainChar3.ppm");
@@ -368,7 +368,7 @@ void initOpengl(void)
     //===========================================================
     // Generate Textures
     //===========================================================
-    glGenTextures(1, &gl.maincharacterTexture);
+    //glGenTextures(1, &gl.maincharacterTexture);
     glGenTextures(1, &gl.maincharacter1Texture);
     glGenTextures(1, &gl.maincharacter2Texture);
     glGenTextures(1, &gl.maincharacter3Texture);
@@ -412,7 +412,7 @@ void initOpengl(void)
 
     //==============================================
     // Main Character to be Loaded
-    int w = gl.maincharacterImage->width;
+    /*int w = gl.maincharacterImage->width;
     int h = gl.maincharacterImage->height;
     glBindTexture(GL_TEXTURE_2D, gl.maincharacterTexture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
@@ -422,12 +422,13 @@ void initOpengl(void)
 	    GL_RGBA, GL_UNSIGNED_BYTE, maincharacterData);
     free(maincharacterData);
     unlink("./images/mainChar.ppm");
+    */
     //==============================================
 
     //==============================================
     // Main Character 1
-    w = gl.maincharacter1Image->width;
-    h = gl.maincharacter1Image->height;
+    int w = gl.maincharacter1Image->width;
+    int h = gl.maincharacter1Image->height;
     glBindTexture(GL_TEXTURE_2D, gl.maincharacter1Texture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
@@ -1333,7 +1334,7 @@ void render(void)
 	renderBackground();
 	renderTiles();
 	//renderPlatform();
-	renderChristianSprites();
+	renderChristianSprites(gl.characterSelect);
 	showTurret();
 	showenemy1();
 	show_mari();

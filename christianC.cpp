@@ -72,32 +72,169 @@ void particleMove()
     }
 }
 
-void particlePhysics()
+void particlePhysics(int charSelect)
 {
-    for(int i = 0; i < gl.particleCount; i++) {
-       glColor3ub(255, 255, 255);
-       glPushMatrix();
-       glTranslatef(gl.particle[i].cx, gl.particle[i].cy, 0);
-       float w = gl.particleWidth;
-       float h = gl.particleHeight;
-       glBindTexture(GL_TEXTURE_2D, gl.texthighlightTexture);
-       glBegin(GL_QUADS);
-       glTexCoord2f(0.0, 1.0); glVertex2i(-w, -h);
-       glTexCoord2f(0.0, 0.0); glVertex2i(-w,  h);
-       glTexCoord2f(1.0, 0.0); glVertex2i(w,   h);
-       glTexCoord2f(1.0, 1.0); glVertex2i(w,  -h);
-       glEnd();
-       glPopMatrix();
-       if(gl.particle[i].direction == 1) {
-           gl.particle[i].cx = gl.particle[i].cx - gl.particle[i].velocity;
-       }
-       if(gl.particle[i].direction == 0) {
-           gl.particle[i].cx = gl.particle[i].cx + gl.particle[i].velocity;
-       }
-       if(gl.particle[i].cx < 0 || gl.particle[i].cx > gl.xres) {
-           gl.particle[i] = gl.particle[gl.particleCount - 1];
-           gl.particleCount--;      
-       }
+    if (charSelect == 1) {
+        for (int i = 0; i < gl.particleCount; i++) {
+            glColor3ub(255, 255, 255);
+            glPushMatrix();
+            glTranslatef(gl.particle[i].cx, gl.particle[i].cy, 0);
+            float w = gl.particleWidth;
+            float h = gl.particleHeight;
+            glBindTexture(GL_TEXTURE_2D, gl.purpleballTexture);
+            glBegin(GL_QUADS);
+            glTexCoord2f(0.0, 1.0); glVertex2i(-w, -h);
+            glTexCoord2f(0.0, 0.0); glVertex2i(-w,  h);
+            glTexCoord2f(1.0, 0.0); glVertex2i(w,   h);
+            glTexCoord2f(1.0, 1.0); glVertex2i(w,  -h);
+            glEnd();
+            glPopMatrix();
+            if (gl.particle[i].direction == 1) {
+                gl.particle[i].cx = gl.particle[i].cx - gl.particle[i].velocity;
+            }
+            if (gl.particle[i].direction == 0) {
+                gl.particle[i].cx = gl.particle[i].cx + gl.particle[i].velocity;
+            }
+            if (gl.particle[i].cx < 0 || gl.particle[i].cx > gl.xres) {
+                gl.particle[i] = gl.particle[gl.particleCount - 1];
+                gl.particleCount--;      
+            }
+        }
+    }
+    if (charSelect == 2) {
+        for (int i = 0; i < gl.particleCount; i++) {
+            glColor3ub(255, 255, 255);
+            glPushMatrix();
+            glTranslatef(gl.particle[i].cx, gl.particle[i].cy, 0);
+            float w = gl.particleWidth;
+            float h = gl.particleHeight;
+            glBindTexture(GL_TEXTURE_2D, gl.moltenballTexture);
+            glBegin(GL_QUADS);
+            glTexCoord2f(0.0, 1.0); glVertex2i(-w, -h);
+            glTexCoord2f(0.0, 0.0); glVertex2i(-w,  h);
+            glTexCoord2f(1.0, 0.0); glVertex2i(w,   h);
+            glTexCoord2f(1.0, 1.0); glVertex2i(w,  -h);
+            glEnd();
+            glPopMatrix();
+            if (gl.particle[i].direction == 1) {
+                gl.particle[i].cx = gl.particle[i].cx - gl.particle[i].velocity;
+            }
+            if (gl.particle[i].direction == 0) {
+                gl.particle[i].cx = gl.particle[i].cx + gl.particle[i].velocity;
+            }
+            if (gl.particle[i].cx < 0 || gl.particle[i].cx > gl.xres) {
+                gl.particle[i] = gl.particle[gl.particleCount - 1];
+                gl.particleCount--;      
+            }
+        }
+    }
+    if (charSelect == 3) {
+        for (int i = 0; i < gl.particleCount; i++) {
+            glColor3ub(255, 255, 255);
+            glPushMatrix();
+            glTranslatef(gl.particle[i].cx, gl.particle[i].cy, 0);
+            float w = gl.particleWidth;
+            float h = gl.particleHeight;
+            glBindTexture(GL_TEXTURE_2D, gl.texthighlightTexture);
+            glBegin(GL_QUADS);
+            glTexCoord2f(0.0, 1.0); glVertex2i(-w, -h);
+            glTexCoord2f(0.0, 0.0); glVertex2i(-w,  h);
+            glTexCoord2f(1.0, 0.0); glVertex2i(w,   h);
+            glTexCoord2f(1.0, 1.0); glVertex2i(w,  -h);
+            glEnd();
+            glPopMatrix();
+            if (gl.particle[i].direction == 1) {
+                gl.particle[i].cx = gl.particle[i].cx - gl.particle[i].velocity;
+            }
+            if (gl.particle[i].direction == 0) {
+                gl.particle[i].cx = gl.particle[i].cx + gl.particle[i].velocity;
+            }
+            if (gl.particle[i].cx < 0 || gl.particle[i].cx > gl.xres) {
+                gl.particle[i] = gl.particle[gl.particleCount - 1];
+                gl.particleCount--;      
+            }
+        }
+    }
+    if (charSelect == 4) {
+        for (int i = 0; i < gl.particleCount; i++) {
+            glColor3ub(255, 255, 255);
+            glPushMatrix();
+            glTranslatef(gl.particle[i].cx, gl.particle[i].cy, 0);
+            float w = gl.particleWidth;
+            float h = gl.particleHeight;
+            glBindTexture(GL_TEXTURE_2D, gl.americaballTexture);
+            glBegin(GL_QUADS);
+            glTexCoord2f(0.0, 1.0); glVertex2i(-w, -h);
+            glTexCoord2f(0.0, 0.0); glVertex2i(-w,  h);
+            glTexCoord2f(1.0, 0.0); glVertex2i(w,   h);
+            glTexCoord2f(1.0, 1.0); glVertex2i(w,  -h);
+            glEnd();
+            glPopMatrix();
+            if (gl.particle[i].direction == 1) {
+                gl.particle[i].cx = gl.particle[i].cx - gl.particle[i].velocity;
+            }
+            if (gl.particle[i].direction == 0) {
+                gl.particle[i].cx = gl.particle[i].cx + gl.particle[i].velocity;
+            }
+            if (gl.particle[i].cx < 0 || gl.particle[i].cx > gl.xres) {
+                gl.particle[i] = gl.particle[gl.particleCount - 1];
+                gl.particleCount--;      
+            }
+        }
+    }
+    if (charSelect == 5) {
+        for (int i = 0; i < gl.particleCount; i++) {
+            glColor3ub(255, 255, 255);
+            glPushMatrix();
+            glTranslatef(gl.particle[i].cx, gl.particle[i].cy, 0);
+            float w = gl.particleWidth;
+            float h = gl.particleHeight;
+            glBindTexture(GL_TEXTURE_2D, gl.americaballTexture);
+            glBegin(GL_QUADS);
+            glTexCoord2f(0.0, 1.0); glVertex2i(-w, -h);
+            glTexCoord2f(0.0, 0.0); glVertex2i(-w,  h);
+            glTexCoord2f(1.0, 0.0); glVertex2i(w,   h);
+            glTexCoord2f(1.0, 1.0); glVertex2i(w,  -h);
+            glEnd();
+            glPopMatrix();
+            if (gl.particle[i].direction == 1) {
+                gl.particle[i].cx = gl.particle[i].cx - gl.particle[i].velocity;
+            }
+            if (gl.particle[i].direction == 0) {
+                gl.particle[i].cx = gl.particle[i].cx + gl.particle[i].velocity;
+            }
+            if (gl.particle[i].cx < 0 || gl.particle[i].cx > gl.xres) {
+                gl.particle[i] = gl.particle[gl.particleCount - 1];
+                gl.particleCount--;      
+            }
+        }
+    }
+    if (charSelect == 6) {
+        for (int i = 0; i < gl.particleCount; i++) {
+            glColor3ub(255, 255, 255);
+            glPushMatrix();
+            glTranslatef(gl.particle[i].cx, gl.particle[i].cy, 0);
+            float w = gl.particleWidth;
+            float h = gl.particleHeight;
+            glBindTexture(GL_TEXTURE_2D, gl.americaballTexture);
+            glBegin(GL_QUADS);
+            glTexCoord2f(0.0, 1.0); glVertex2i(-w, -h);
+            glTexCoord2f(0.0, 0.0); glVertex2i(-w,  h);
+            glTexCoord2f(1.0, 0.0); glVertex2i(w,   h);
+            glTexCoord2f(1.0, 1.0); glVertex2i(w,  -h);
+            glEnd();
+            glPopMatrix();
+            if (gl.particle[i].direction == 1) {
+                gl.particle[i].cx = gl.particle[i].cx - gl.particle[i].velocity;
+            }
+            if (gl.particle[i].direction == 0) {
+                gl.particle[i].cx = gl.particle[i].cx + gl.particle[i].velocity;
+            }
+            if (gl.particle[i].cx < 0 || gl.particle[i].cx > gl.xres) {
+                gl.particle[i] = gl.particle[gl.particleCount - 1];
+                gl.particleCount--;      
+            }
+        }
     }
 }
 
@@ -225,7 +362,7 @@ void checkJump()
         }
         if (mainChar.cy <= 85) {
             //modyify this later to set to highest tile level
-             mainChar.cy = 85;
+            mainChar.cy = 85;
             gl.isJumpingFlag = 0;
         }
     }
@@ -244,29 +381,29 @@ void conditionalRenders(Flt tx, Flt ty, Flt cx, Flt w, Flt cy, Flt h)
 {
     checkJump();
     if (gl.keys[XK_Right] && gl.keys[XK_space] == 0 &&
-        gl.isJumpingFlag == 0) {
-            shootWalkRight(tx,ty,cx,w,cy,h);
-            gl.directionFlag = 0;
+            gl.isJumpingFlag == 0) {
+        shootWalkRight(tx,ty,cx,w,cy,h);
+        gl.directionFlag = 0;
     } else if (gl.keys[XK_Left] && gl.keys[XK_space] == 0 &&
-        gl.isJumpingFlag == 0) {
-            shootWalkLeft(tx,ty,cx,w,cy,h);
-            gl.directionFlag = 1;
+            gl.isJumpingFlag == 0) {
+        shootWalkLeft(tx,ty,cx,w,cy,h);
+        gl.directionFlag = 1;
     } else if ((gl.keys[XK_space] && gl.directionFlag == 0 &&
-        gl.isJumpingFlag == 0) || (gl.keys[XK_space] && gl.keys[XK_Right])) {
-            shootStandRight(tx,ty,cx,w,cy,h);
-            shootParticle();
+                gl.isJumpingFlag == 0) || (gl.keys[XK_space] && gl.keys[XK_Right])) {
+        shootStandRight(tx,ty,cx,w,cy,h);
+        shootParticle();
     } else if ((gl.keys[XK_space] && gl.directionFlag == 1 &&
-        gl.isJumpingFlag == 0) || (gl.keys[XK_space] && gl.keys[XK_Left])) {
-            shootStandLeft(tx,ty,cx,w,cy,h);
-            shootParticle();
+                gl.isJumpingFlag == 0) || (gl.keys[XK_space] && gl.keys[XK_Left])) {
+        shootStandLeft(tx,ty,cx,w,cy,h);
+        shootParticle();
     } else if (gl.keys[XK_Left] && gl.isJumpingFlag == 1 &&
-        (gl.keys[XK_space] == 1 || gl.keys[XK_space] == 0)) {
-            jumpLeft(tx, ty, cx, w, cy, h);
-            gl.directionFlag = 1;
+            (gl.keys[XK_space] == 1 || gl.keys[XK_space] == 0)) {
+        jumpLeft(tx, ty, cx, w, cy, h);
+        gl.directionFlag = 1;
     } else if (gl.keys[XK_Right] && gl.isJumpingFlag == 1 &&
-        (gl.keys[XK_space] == 1 || gl.keys[XK_space] == 0)) {
-            jumpRight(tx, ty, cx, w, cy, h);
-            gl.directionFlag = 0;
+            (gl.keys[XK_space] == 1 || gl.keys[XK_space] == 0)) {
+        jumpRight(tx, ty, cx, w, cy, h);
+        gl.directionFlag = 0;
     }
 
     if (gl.keys[XK_Right] == 1 || gl.keys[XK_Left] == 1) {
@@ -279,30 +416,30 @@ void conditionalRenders(Flt tx, Flt ty, Flt cx, Flt w, Flt cy, Flt h)
         jump();
     }
     if (gl.keys[XK_Left] == 0 && gl.keys[XK_Right] == 0 &&
-        gl.directionFlag == 1 && gl.keys[XK_space] == 0 &&
-        gl.isJumpingFlag == 0) {
-            standLeft(tx, ty, cx, w, cy, h);
+            gl.directionFlag == 1 && gl.keys[XK_space] == 0 &&
+            gl.isJumpingFlag == 0) {
+        standLeft(tx, ty, cx, w, cy, h);
     }
     if (gl.keys[XK_Right] == 0 && gl.keys[XK_Right] == 0 &&
-        gl.directionFlag == 0 && gl.keys[XK_space] == 0  &&
-        gl.isJumpingFlag == 0) {
-            standRight(tx, ty, cx, w, cy, h);
+            gl.directionFlag == 0 && gl.keys[XK_space] == 0  &&
+            gl.isJumpingFlag == 0) {
+        standRight(tx, ty, cx, w, cy, h);
     }
     if (gl.keys[XK_Left] == 0 && gl.keys[XK_Right] == 0 &&
-        gl.directionFlag == 1 && (gl.keys[XK_space] == 0 || 
-        gl.keys[XK_space] == 1) && gl.isJumpingFlag == 1) {
-            jumpLeft(tx, ty, cx, w, cy, h);
-	    if (gl.keys[XK_space] == 1) {
-	        shootParticle();
-            }
+            gl.directionFlag == 1 && (gl.keys[XK_space] == 0 || 
+                gl.keys[XK_space] == 1) && gl.isJumpingFlag == 1) {
+        jumpLeft(tx, ty, cx, w, cy, h);
+        if (gl.keys[XK_space] == 1) {
+            shootParticle();
+        }
     }
     if (gl.keys[XK_Right] == 0 && gl.keys[XK_Right] == 0 &&
-        gl.directionFlag == 0 && (gl.keys[XK_space] == 0 ||
-        gl.keys[XK_space] == 1) && gl.isJumpingFlag == 1) {
-            jumpRight(tx, ty, cx, w, cy, h);
-            if (gl.keys[XK_space] == 1) {
-                shootParticle();
-            }
+            gl.directionFlag == 0 && (gl.keys[XK_space] == 0 ||
+                gl.keys[XK_space] == 1) && gl.isJumpingFlag == 1) {
+        jumpRight(tx, ty, cx, w, cy, h);
+        if (gl.keys[XK_space] == 1) {
+            shootParticle();
+        }
     }
 }
 
@@ -317,32 +454,164 @@ void spriteDisappear(Sprite* sprt)
     sprt->cx = -9999999;
 }
 
-void renderMainCharacter()
+void renderMainCharacter(int charSelect)
 {
-    mainChar.cx = gl.xres/2.0;
-    float h = 25.0;
-    float w = h * .903;
-    glPushMatrix();
-    //glTranslated(mainChar.pos[0], mainChar.pos[1], 0);
-    glColor3f(1.0, 1.0, 1.0);
-    glBindTexture(GL_TEXTURE_2D, gl.maincharacterTexture);
-    glEnable(GL_ALPHA_TEST);
-    glAlphaFunc(GL_GREATER, 0.0f);
-    glColor4ub(255,255,255,255);
-    int ix = gl.maincharacterFrame % 4;
-    int iy = 3;
-    if (gl.maincharacterFrame >= 4 && gl.attackFlag == 0)
-        iy = 0;
-    float tx = (float)ix / 4.0;
-    float ty = (float)iy / 3.0;
-    glBegin(GL_QUADS);
-    //works best with
-    //conditionalRenders(tx, ty, -16, w, 16, h);
-    conditionalRenders(tx, ty, mainChar.cx, w, mainChar.cy, h);
-    glEnd();
-    glPopMatrix();
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glDisable(GL_ALPHA_TEST);
+    if (charSelect == 1) {
+        mainChar.cx = gl.xres/2.0;
+        float h = 25.0;
+        float w = h * .903;
+        glPushMatrix();
+        //glTranslated(mainChar.pos[0], mainChar.pos[1], 0);
+        glColor3f(1.0, 1.0, 1.0);
+        glBindTexture(GL_TEXTURE_2D, gl.maincharacter1Texture);
+        glEnable(GL_ALPHA_TEST);
+        glAlphaFunc(GL_GREATER, 0.0f);
+        glColor4ub(255,255,255,255);
+        int ix = gl.maincharacterFrame % 4;
+        int iy = 3;
+        if (gl.maincharacterFrame >= 4 && gl.attackFlag == 0)
+            iy = 0;
+        float tx = (float)ix / 4.0;
+        float ty = (float)iy / 3.0;
+        glBegin(GL_QUADS);
+        //works best with
+        //conditionalRenders(tx, ty, -16, w, 16, h);
+        conditionalRenders(tx, ty, mainChar.cx, w, mainChar.cy, h);
+        glEnd();
+        glPopMatrix();
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glDisable(GL_ALPHA_TEST);
+    }
+    if (charSelect == 2) {
+        mainChar.cx = gl.xres/2.0;
+        float h = 25.0;
+        float w = h * .903;
+        glPushMatrix();
+        //glTranslated(mainChar.pos[0], mainChar.pos[1], 0);
+        glColor3f(1.0, 1.0, 1.0);
+        glBindTexture(GL_TEXTURE_2D, gl.maincharacter2Texture);
+        glEnable(GL_ALPHA_TEST);
+        glAlphaFunc(GL_GREATER, 0.0f);
+        glColor4ub(255,255,255,255);
+        int ix = gl.maincharacterFrame % 4;
+        int iy = 3;
+        if (gl.maincharacterFrame >= 4 && gl.attackFlag == 0)
+            iy = 0;
+        float tx = (float)ix / 4.0;
+        float ty = (float)iy / 3.0;
+        glBegin(GL_QUADS);
+        //works best with
+        //conditionalRenders(tx, ty, -16, w, 16, h);
+        conditionalRenders(tx, ty, mainChar.cx, w, mainChar.cy, h);
+        glEnd();
+        glPopMatrix();
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glDisable(GL_ALPHA_TEST);
+    }
+    if (charSelect == 3) {
+        mainChar.cx = gl.xres/2.0;
+        float h = 25.0;
+        float w = h * .903;
+        glPushMatrix();
+        //glTranslated(mainChar.pos[0], mainChar.pos[1], 0);
+        glColor3f(1.0, 1.0, 1.0);
+        glBindTexture(GL_TEXTURE_2D, gl.maincharacter3Texture);
+        glEnable(GL_ALPHA_TEST);
+        glAlphaFunc(GL_GREATER, 0.0f);
+        glColor4ub(255,255,255,255);
+        int ix = gl.maincharacterFrame % 4;
+        int iy = 3;
+        if (gl.maincharacterFrame >= 4 && gl.attackFlag == 0)
+            iy = 0;
+        float tx = (float)ix / 4.0;
+        float ty = (float)iy / 3.0;
+        glBegin(GL_QUADS);
+        //works best with
+        //conditionalRenders(tx, ty, -16, w, 16, h);
+        conditionalRenders(tx, ty, mainChar.cx, w, mainChar.cy, h);
+        glEnd();
+        glPopMatrix();
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glDisable(GL_ALPHA_TEST);
+    }
+    if (charSelect == 4) {
+        mainChar.cx = gl.xres/2.0;
+        float h = 25.0;
+        float w = h * .903;
+        glPushMatrix();
+        //glTranslated(mainChar.pos[0], mainChar.pos[1], 0);
+        glColor3f(1.0, 1.0, 1.0);
+        glBindTexture(GL_TEXTURE_2D, gl.maincharacter4Texture);
+        glEnable(GL_ALPHA_TEST);
+        glAlphaFunc(GL_GREATER, 0.0f);
+        glColor4ub(255,255,255,255);
+        int ix = gl.maincharacterFrame % 4;
+        int iy = 3;
+        if (gl.maincharacterFrame >= 4 && gl.attackFlag == 0)
+            iy = 0;
+        float tx = (float)ix / 4.0;
+        float ty = (float)iy / 3.0;
+        glBegin(GL_QUADS);
+        //works best with
+        //conditionalRenders(tx, ty, -16, w, 16, h);
+        conditionalRenders(tx, ty, mainChar.cx, w, mainChar.cy, h);
+        glEnd();
+        glPopMatrix();
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glDisable(GL_ALPHA_TEST);
+    }
+    if (charSelect == 5) {
+        mainChar.cx = gl.xres/2.0;
+        float h = 25.0;
+        float w = h * .903;
+        glPushMatrix();
+        //glTranslated(mainChar.pos[0], mainChar.pos[1], 0);
+        glColor3f(1.0, 1.0, 1.0);
+        glBindTexture(GL_TEXTURE_2D, gl.maincharacter4Texture);
+        glEnable(GL_ALPHA_TEST);
+        glAlphaFunc(GL_GREATER, 0.0f);
+        glColor4ub(255,255,255,255);
+        int ix = gl.maincharacterFrame % 4;
+        int iy = 3;
+        if (gl.maincharacterFrame >= 4 && gl.attackFlag == 0)
+            iy = 0;
+        float tx = (float)ix / 4.0;
+        float ty = (float)iy / 3.0;
+        glBegin(GL_QUADS);
+        //works best with
+        //conditionalRenders(tx, ty, -16, w, 16, h);
+        conditionalRenders(tx, ty, mainChar.cx, w, mainChar.cy, h);
+        glEnd();
+        glPopMatrix();
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glDisable(GL_ALPHA_TEST);
+    }
+    if (charSelect == 6) {
+        mainChar.cx = gl.xres/2.0;
+        float h = 25.0;
+        float w = h * .903;
+        glPushMatrix();
+        //glTranslated(mainChar.pos[0], mainChar.pos[1], 0);
+        glColor3f(1.0, 1.0, 1.0);
+        glBindTexture(GL_TEXTURE_2D, gl.maincharacter4Texture);
+        glEnable(GL_ALPHA_TEST);
+        glAlphaFunc(GL_GREATER, 0.0f);
+        glColor4ub(255,255,255,255);
+        int ix = gl.maincharacterFrame % 4;
+        int iy = 3;
+        if (gl.maincharacterFrame >= 4 && gl.attackFlag == 0)
+            iy = 0;
+        float tx = (float)ix / 4.0;
+        float ty = (float)iy / 3.0;
+        glBegin(GL_QUADS);
+        //works best with
+        //conditionalRenders(tx, ty, -16, w, 16, h);
+        conditionalRenders(tx, ty, mainChar.cx, w, mainChar.cy, h);
+        glEnd();
+        glPopMatrix();
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glDisable(GL_ALPHA_TEST);
+    }
 }
 
 void renderSpeedboost1()
@@ -505,12 +774,12 @@ void christianInit()
     speedboost1.cx= 750;
     speedboost1.cy = 90;
 }
-void renderChristianSprites()
+void renderChristianSprites(int charSelect)
 {
-    renderMainCharacter();
+    renderMainCharacter(charSelect);
     renderShield1();
     renderSpeedboost1();
     renderHeart1();
     renderHeart2();
-    particlePhysics();
+    particlePhysics(charSelect);
 }
