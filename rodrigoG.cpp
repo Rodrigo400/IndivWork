@@ -1579,6 +1579,63 @@ void levelselection_menu(int xres, int yres)
     //glDisable(GL_TEXTURE_2D);
     //=================================================
 
+    //=================================================
+    //Level 1 Display==================================
+    //=================================================
+    h = 72;	
+    w = 72;
+    glPushMatrix();
+    glColor3f(1.0,1.0,1.0);
+    glTranslatef(xres*0.25, yres*0.5, 0);
+    glBindTexture(GL_TEXTURE_2D, gl.backgroundTexture);
+    //glEnable(GL_ALPHA_TEST);
+    //glEnable(GL_TEXTURE_2D);
+    glAlphaFunc(GL_GREATER, 0.0f);
+    glColor4ub(255,255,255,255);
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0, 1.0); glVertex2i(-w,-h);
+    glTexCoord2f(0.0, 0.0); glVertex2i(-w,h);
+    glTexCoord2f(1.0, 0.0); glVertex2i(w,h);
+    glTexCoord2f(1.0, 1.0); glVertex2i(w,-h);
+    glEnd();
+    glPopMatrix();
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    //glDisable(GL_ALPHA_TEST);
+    //glDisable(GL_TEXTURE_2D);
+    //=================================================
+
+    //=================================================
+    //Level 2 Display==================================
+    //=================================================
+    h = 72;	
+    w = 72;
+    glPushMatrix();
+    glColor3f(1.0,1.0,1.0);
+    glTranslatef(xres*0.75, yres*0.5, 0);
+    glBindTexture(GL_TEXTURE_2D, gl.backgroundTexture);
+    //glEnable(GL_ALPHA_TEST);
+    //glEnable(GL_TEXTURE_2D);
+    glAlphaFunc(GL_GREATER, 0.0f);
+    glColor4ub(255,255,255,255);
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0, 1.0); glVertex2i(-w,-h);
+    glTexCoord2f(0.0, 0.0); glVertex2i(-w,h);
+    glTexCoord2f(1.0, 0.0); glVertex2i(w,h);
+    glTexCoord2f(1.0, 1.0); glVertex2i(w,-h);
+    glEnd();
+    glPopMatrix();
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    //glDisable(GL_ALPHA_TEST);
+    //glDisable(GL_TEXTURE_2D);
+    //=================================================
+
+    Rect r;    
+
+    r.bot = yres/2 - 250;
+    r.left = xres/2;
+    r.center = yres/2;
+    ggprint13(&r, 20, white, "LEVEL SELECTION");
+
     if (gl.keys[XK_Return]) {
         if (gl.menu_position == 1) {
             gl.levelSelect = 1;
