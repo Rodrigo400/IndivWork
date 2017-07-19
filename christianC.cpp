@@ -3,58 +3,26 @@
 // Purpose: Create a sidescroller with a team
 
 // What I need to do:
-// Main character sprite movement
-// Main character jump
-// Main character shoot
-// Main character die
-// Main character level collision
-// Main character health tracking
+//     -Main character level collision
 
-// Progress:
-// June 21 2017
-// Displayed Sprite on Screen/ Resized
+// What I have done:
+//     -Main Character Movement
+//     -Main Character Dynamic Jump Physics
+//     -Main Character Shoot + Particle Phyics
+//     -Other Sprite Movement
+//     -Working power ups
 
-// June 22 2017
-// Created Movement and moved commands to my cpp file
-// Character now has "shoot animation"
-
-// June 23 2017
-// Code works with others
-// 
-
-// June 24 2017
-// clearScreen();
-// indent/ coding style change
-
-// June 28 2017
-// added Sprite movement
-// create Sprite class in game.h
-// Sprite class contains x and y coord of each sprite
-
-// June 29 2017
-// Change x coordinates on everyone's files
-// Everyone's sprites move based on main character's movements
-// Added base for shoot particles which are just boxes
-// Waiting on tile system for Jump Physics
-
-// July 6 2017
-// Added jump sprite conditionals
-
-// July 7 2017
-// Added jump physics Need to dynamically calculate max height
-//    based on height before jump
-
-// July 10 2017
-// Added working power ups
-
-// July 14 2017
-// Added working power ups
+// Cool features:
+//     -Movement is created through an illusion by moving everything but
+//         the main character
+//     -Particles react to characters movement!
+//     -Jump height is dynamically calculated! 
+//     -Attributes (health, movementspeed, etc.) are stored in a class
+//         this makes it easy to manipulate. Good for power ups!
 
 #include <iostream>
 #include <string.h>
-#include <math.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <time.h>
 #include <X11/Xlib.h>
@@ -63,27 +31,90 @@
 #include "ppm.h"
 #include "fonts.h"
 #include "game.h"
+//#include <unistd.h>
+//#include <math.h>
 using namespace std;
 
 Ppmimage *characterImage(int charSelect)
 {
     if (charSelect == 1) {
-        system("convert ./images/mainChar.png ./images/mainChar.ppm");
-        return ppm6GetImage("./images/mainChar.ppm");
+        system("convert ./images/mainChar1.png ./images/mainChar1.ppm");
+        return ppm6GetImage("./images/mainChar1.ppm");
     } else if (charSelect == 2) {
         system("convert ./images/mainChar2.png ./images/mainChar2.ppm");
         return ppm6GetImage("./images/mainChar2.ppm");
+    } else if (charSelect == 3) {
+        system("convert ./images/mainChar3.png ./images/mainChar3.ppm");
+        return ppm6GetImage("./images/mainChar3.ppm");
+    } else if (charSelect == 4) {
+        system("convert ./images/mainChar4.png ./images/mainChar4.ppm");
+        return ppm6GetImage("./images/mainChar4.ppm");
     }
+
+    return 0;
     //removes warning since no return outside conditionals
-    system("convert ./images/mainChar.png ./images/mainChar.ppm");
-    return ppm6GetImage("./images/mainChar.ppm");
+    //system("convert ./images/mainChar.png ./images/mainChar.ppm");
+    //return ppm6GetImage("./images/mainChar.ppm");
+}
+
+void particleMove()
+{
+    //move particles based on character movement.
+    //if character is moving same direction, slow down
+    //if character is moving opposite direction, speed up
+    for(int i = 0; i < gl.particleCount; i++) {
+        if (gl.keys[XK_Left] && gl.particle[i].direction == 1) {
+            gl.particle[i].cx = gl.particle[i].cx + gl.movementSpeed;
+        }
+        if (gl.keys[XK_Right] && gl.particle[i].direction == 0) {
+            gl.particle[i].cx = gl.particle[i].cx - gl.movementSpeed;
+        }
+    }
+}
+
+void particlePhysics()
+{
+    for(int i = 0; i < gl.particleCount; i++) {
+       glColor3ub(255, 255, 255);
+       glPushMatrix();
+       glTranslatef(gl.particle[i].cx, gl.particle[i].cy, 0);
+       float w = gl.particleWidth;
+       float h = gl.particleHeight;
+       glBegin(GL_QUADS);
+       glVertex2i(-w, -h);
+       glVertex2i(-w,  h);
+       glVertex2i(w,   h);
+       glVertex2i(w,  -h);
+       glEnd();
+       glPopMatrix();
+       if(gl.particle[i].direction == 1) {
+           gl.particle[i].cx = gl.particle[i].cx - gl.particle[i].velocity;
+       }
+       if(gl.particle[i].direction == 0) {
+           gl.particle[i].cx = gl.particle[i].cx + gl.particle[i].velocity;
+       }
+       if(gl.particle[i].cx < 0 || gl.particle[i].cx > gl.xres) {
+           gl.particle[i] = gl.particle[gl.particleCount - 1];
+           gl.particleCount--;      
+       }
+    }
+}
+
+void makeParticle()
+{
+    gl.particle[gl.particleCount].cx = mainChar.cx;
+    gl.particle[gl.particleCount].cy = mainChar.cy;
+    gl.particle[gl.particleCount].velocity = gl.particleVelocity;
+    gl.particle[gl.particleCount].direction = gl.directionFlag;
+    gl.particleCount++;
 }
 
 void shootParticle()
 {
-    printf("Shoot\n");
-    for (int i = 0; i < 5; i++)
-    {
+    if(gl.oneOffShootFlag == true) {
+        printf("Shoot\n");
+        makeParticle(); 
+        gl.oneOffShootFlag = false;
     }
 }
 
@@ -153,7 +184,8 @@ void jumpLeft(Flt tx, Flt ty, Flt cx, Flt w, Flt cy, Flt h)
 
 void moveSpriteRight(Sprite *sprt)
 {
-    sprt->cx = sprt->cx + gl.movementSpeed;
+    if (gl.camera[0] > 0)
+        sprt->cx = sprt->cx + gl.movementSpeed;
 }
 
 void moveSpriteLeft(Sprite *sprt)
@@ -163,11 +195,12 @@ void moveSpriteLeft(Sprite *sprt)
 
 void jump()
 {
+    printf("Jump\n");
     if (gl.isJumpingFlag == 0) {
-	//temporarily store current y coord
+        //temporarily store current y coord
         gl.initialJumpCy = mainChar.cy;
         //temporarily store max jump height
-	gl.finalJumpCy = gl.initialJumpCy + gl.jumpHeight;
+        gl.finalJumpCy = gl.initialJumpCy + gl.jumpHeight;
         gl.isJumpingFlag = 1;
         gl.jumpDirectionFlag = 1;
     }
@@ -184,17 +217,26 @@ void checkJump()
             gl.jumpDirectionFlag = 0;
         }
     }
-    // When character reaches max height with one jump
+    // When character reaches max height, decrement to highest tile on x coord
     if (gl.isJumpingFlag == 1 && gl.jumpDirectionFlag == 0) {
         if (mainChar.cy > gl.initialJumpCy) {
             mainChar.cy = mainChar.cy - ((gl.finalJumpCy - mainChar.cy) * gl.jumpRate) - 1;
         }
-        if (mainChar.cy <= gl.initialJumpCy) {
+        if (mainChar.cy <= 85) {
             //modyify this later to set to highest tile level
-	    mainChar.cy = 90;
+             mainChar.cy = 85;
             gl.isJumpingFlag = 0;
         }
     }
+}
+
+void checkTilesForMovement()
+{
+    //if current height is higher than current tile height
+    //cant move.
+    //jump to change current height.
+    //if current height is higher or equal, can move to that tile
+    // have a global variable for this to allow other sprites to move or not
 }
 
 void conditionalRenders(Flt tx, Flt ty, Flt cx, Flt w, Flt cy, Flt h)
@@ -226,8 +268,14 @@ void conditionalRenders(Flt tx, Flt ty, Flt cx, Flt w, Flt cy, Flt h)
             gl.directionFlag = 0;
     }
 
+    if (gl.keys[XK_Right] == 1 || gl.keys[XK_Left] == 1) {
+        particleMove();
+    }
+    if (gl.keys[XK_space] == 0) {
+        gl.oneOffShootFlag = true;
+    }
     if (gl.keys[XK_Up] && gl.isJumpingFlag == 0) {
-            jump();
+        jump();
     }
     if (gl.keys[XK_Left] == 0 && gl.keys[XK_Right] == 0 &&
         gl.directionFlag == 1 && gl.keys[XK_space] == 0 &&
@@ -245,15 +293,15 @@ void conditionalRenders(Flt tx, Flt ty, Flt cx, Flt w, Flt cy, Flt h)
             jumpLeft(tx, ty, cx, w, cy, h);
 	    if (gl.keys[XK_space] == 1) {
 	        shootParticle();
-	    }
+            }
     }
     if (gl.keys[XK_Right] == 0 && gl.keys[XK_Right] == 0 &&
         gl.directionFlag == 0 && (gl.keys[XK_space] == 0 ||
         gl.keys[XK_space] == 1) && gl.isJumpingFlag == 1) {
             jumpRight(tx, ty, cx, w, cy, h);
-	    if (gl.keys[XK_space] == 1) {
-	        shootParticle();
-	    }
+            if (gl.keys[XK_space] == 1) {
+                shootParticle();
+            }
     }
 }
 
@@ -274,6 +322,7 @@ void renderMainCharacter()
     float h = 25.0;
     float w = h * .903;
     glPushMatrix();
+    //glTranslated(mainChar.pos[0], mainChar.pos[1], 0);
     glColor3f(1.0, 1.0, 1.0);
     glBindTexture(GL_TEXTURE_2D, gl.maincharacterTexture);
     glEnable(GL_ALPHA_TEST);
@@ -286,6 +335,8 @@ void renderMainCharacter()
     float tx = (float)ix / 4.0;
     float ty = (float)iy / 3.0;
     glBegin(GL_QUADS);
+    //works best with
+    //conditionalRenders(tx, ty, -16, w, 16, h);
     conditionalRenders(tx, ty, mainChar.cx, w, mainChar.cy, h);
     glEnd();
     glPopMatrix();
@@ -308,10 +359,10 @@ void renderSpeedboost1()
         float tx = (float)ix;
         float ty = (float)iy;
         glBegin(GL_QUADS);
-        glTexCoord2f(tx + 1,    ty + 1); glVertex2i(speedboost1.cx-w, speedboost1.cy-h);
-        glTexCoord2f(tx + 1,    ty); glVertex2i(speedboost1.cx-w, speedboost1.cy+h);
-        glTexCoord2f(tx,           ty ); glVertex2i(speedboost1.cx+w, speedboost1.cy+h);
-        glTexCoord2f(tx,            ty + 1); glVertex2i(speedboost1.cx+w, speedboost1.cy-h);
+        glTexCoord2f(tx + 1, ty + 1); glVertex2i(speedboost1.cx-w, speedboost1.cy-h);
+        glTexCoord2f(tx + 1,     ty); glVertex2i(speedboost1.cx-w, speedboost1.cy+h);
+        glTexCoord2f(tx,        ty ); glVertex2i(speedboost1.cx+w, speedboost1.cy+h);
+        glTexCoord2f(tx,     ty + 1); glVertex2i(speedboost1.cx+w, speedboost1.cy-h);
         glEnd();
         glPopMatrix();
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -320,9 +371,10 @@ void renderSpeedboost1()
             //if character picks up power up,
             //stop rendering and set x to -999999 to avoid
             //picking up invisible power ups
+            printf("Picked up speed boost! Movement Speed: + 0.2!\n");
             gl.speedboost1Flag = false;
             spriteDisappear(&speedboost1);
-            gl.movementSpeed = gl.movementSpeed + 1.5;
+            gl.movementSpeed = gl.movementSpeed + 0.2;
         }
     }
 }
@@ -342,10 +394,10 @@ void renderShield1()
         float tx = (float)ix;
         float ty = (float)iy;
         glBegin(GL_QUADS);
-        glTexCoord2f(tx + 1,    ty + 1); glVertex2i(shield1.cx-w, shield1.cy-h);
-        glTexCoord2f(tx + 1,    ty); glVertex2i(shield1.cx-w, shield1.cy+h);
-        glTexCoord2f(tx,           ty ); glVertex2i(shield1.cx+w, shield1.cy+h);
-        glTexCoord2f(tx,            ty + 1); glVertex2i(shield1.cx+w, shield1.cy-h);
+        glTexCoord2f(tx + 1, ty + 1); glVertex2i(shield1.cx-w, shield1.cy-h);
+        glTexCoord2f(tx + 1, ty    ); glVertex2i(shield1.cx-w, shield1.cy+h);
+        glTexCoord2f(tx,     ty    ); glVertex2i(shield1.cx+w, shield1.cy+h);
+        glTexCoord2f(tx,     ty + 1); glVertex2i(shield1.cx+w, shield1.cy-h);
         glEnd();
         glPopMatrix();
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -354,6 +406,7 @@ void renderShield1()
             //if character picks up power up,
             //stop rendering and set x to -999999 to avoid
             //picking up invisible power ups
+            printf("Picked up Shield!\n");
             gl.shield1Flag = false;
             spriteDisappear(&shield1);
         }
@@ -375,10 +428,10 @@ void renderHeart1()
         float tx = (float)ix;
         float ty = (float)iy;
         glBegin(GL_QUADS);
-        glTexCoord2f(tx + 1,    ty + 1); glVertex2i(heart1.cx-w, heart1.cy-h);
-        glTexCoord2f(tx + 1,    ty); glVertex2i(heart1.cx-w, heart1.cy+h);
-        glTexCoord2f(tx,           ty ); glVertex2i(heart1.cx+w, heart1.cy+h);
-        glTexCoord2f(tx,            ty + 1); glVertex2i(heart1.cx+w, heart1.cy-h);
+        glTexCoord2f(tx + 1, ty + 1); glVertex2i(heart1.cx-w, heart1.cy-h);
+        glTexCoord2f(tx + 1, ty    ); glVertex2i(heart1.cx-w, heart1.cy+h);
+        glTexCoord2f(tx,     ty    ); glVertex2i(heart1.cx+w, heart1.cy+h);
+        glTexCoord2f(tx,     ty + 1); glVertex2i(heart1.cx+w, heart1.cy-h);
         glEnd();
         glPopMatrix();
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -389,8 +442,11 @@ void renderHeart1()
             //picking up invisible power ups
             gl.heart1Flag = false;
             spriteDisappear(&heart1);
+            printf("Picked up Health Pack! Health + 5\n");
             if (mainChar.health < 30) {
                 mainChar.health = mainChar.health + 5;
+                if (mainChar.health > 30)
+                    mainChar.health = 30;
             }
         }
     }
@@ -411,10 +467,10 @@ void renderHeart2()
         float tx = (float)ix;
         float ty = (float)iy;
         glBegin(GL_QUADS);
-        glTexCoord2f(tx + 1,    ty + 1); glVertex2i(heart2.cx-w, heart2.cy-h);
-        glTexCoord2f(tx + 1,    ty); glVertex2i(heart2.cx-w, heart2.cy+h);
-        glTexCoord2f(tx,           ty ); glVertex2i(heart2.cx+w, heart2.cy+h);
-        glTexCoord2f(tx,            ty + 1); glVertex2i(heart2.cx+w, heart2.cy-h);
+        glTexCoord2f(tx + 1, ty + 1); glVertex2i(heart2.cx-w, heart2.cy-h);
+        glTexCoord2f(tx + 1, ty    ); glVertex2i(heart2.cx-w, heart2.cy+h);
+        glTexCoord2f(tx,     ty    ); glVertex2i(heart2.cx+w, heart2.cy+h);
+        glTexCoord2f(tx,     ty + 1); glVertex2i(heart2.cx+w, heart2.cy-h);
         glEnd();
         glPopMatrix();
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -424,15 +480,30 @@ void renderHeart2()
             //stop rendering and set x to -999999 to avoid
             //picking up invisible power ups
             gl.heart2Flag = false;
-            printf("health2 picked up\n");
+            printf("Picked up Health Pack! Health + 5\n");
             spriteDisappear(&heart2);
             if (mainChar.health < 30) {
                 mainChar.health = mainChar.health + 5;
+                if (mainChar.health > 30)
+                    mainChar.health = 30;
             }
         }
     }
 }
 
+void christianInit()
+{
+    //initialize my sprites' x and y positions
+    mainChar.cy = 85;
+    shield1.cx = 650;
+    shield1.cy = 90;
+    heart1.cx = 700;
+    heart1.cy = 90;
+    heart2.cx = 800;
+    heart2.cy = 90;
+    speedboost1.cx= 750;
+    speedboost1.cy = 90;
+}
 void renderChristianSprites()
 {
     renderMainCharacter();
@@ -440,4 +511,5 @@ void renderChristianSprites()
     renderSpeedboost1();
     renderHeart1();
     renderHeart2();
+    particlePhysics();
 }

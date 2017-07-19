@@ -35,10 +35,20 @@
 //===============================================
 // Week 7 Progress
 //===============================================
-// Some menu logic working
+// 80% menu logic working
+// Forward and backward menu flow
 // Tutorial Page
 //===============================================
 
+//===============================================
+// Week 8 Progress
+//===============================================
+// Made Characters with projectiles:
+// 	Donald Trump
+// 	Cyborg
+// 	Purple Helmet
+// 	Molten Girl
+//===============================================
 
 #include <iostream>
 #include <string.h>
@@ -76,6 +86,7 @@ void standingPose(int);
 void getPlayerName(int, UserInput &input);
 void assign_playername(char [], UserInput &input);
 void PlayerStart(int, char [], UserInput &input);
+void removePPM(void);
 int menu_position_highlight;
 unsigned int white = 0xffffff;
 
@@ -316,6 +327,7 @@ void start_menu(int xres, int yres)
         } else if (gl.menu_position == 4) {
             gl.display_startmenu = false;
             gl.display_creditsmenu = true;
+            gl.keys[XK_Return] = false;
         } else if (gl.menu_position == 5) {
             gl.display_startmenu = false;
             gl.done = 1;
@@ -496,14 +508,14 @@ void tutorial_menu(int xres, int yres)
 
     Rect r;    
 
-    r.bot = yres*0.9;
+    r.bot = yres*0.89;
     r.left = xres*0.235;
     r.center = yres/2;
     for (int i = 0; i < 26; i++) {
         ggprint13(&r, 20, white, "||");
     }
 
-    r.bot = yres*0.9;
+    r.bot = yres*0.89;
     r.left = xres*0.77;
     r.center = yres/2;
     for (int i = 0; i < 26; i++) {
@@ -561,6 +573,7 @@ void tutorial_menu(int xres, int yres)
         if (gl.display_tutorialmenu) {
             gl.display_tutorialmenu = false;
             gl.display_startmenu = true;
+            gl.keys[XK_Tab] = false;
         }
     }
 } 
@@ -613,11 +626,11 @@ void tutorial_menu2(int xres, int yres)
     //=================================================
     //Tab Key==========================================
     //=================================================
-    h = 20;
-    w = 25;
+    h = 25;
+    w = 33;
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
-    glTranslatef(gl.xres*0.3, gl.yres*0.8, 0);
+    glTranslatef(gl.xres*0.39, gl.yres*0.775, 0);
     glBindTexture(GL_TEXTURE_2D, gl.tabkeyTexture);
     glEnable(GL_ALPHA_TEST);
     //glEnable(GL_TEXTURE_2D);
@@ -638,11 +651,11 @@ void tutorial_menu2(int xres, int yres)
     //=================================================
     //Left Arrow Key===================================
     //=================================================
-    h = 15;
-    w = 15;
+    h = 25;
+    w = 25;
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
-    glTranslatef(gl.xres*0.3, gl.yres*0.7, 0);
+    glTranslatef(gl.xres*0.36, gl.yres*0.575, 0);
     glBindTexture(GL_TEXTURE_2D, gl.leftarrowkeyTexture);
     glEnable(GL_ALPHA_TEST);
     //glEnable(GL_TEXTURE_2D);
@@ -663,11 +676,11 @@ void tutorial_menu2(int xres, int yres)
     //=================================================
     //Right Arrow Key==================================
     //=================================================
-    h = 15;
-    w = 15;
+    h = 25;
+    w = 25;
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
-    glTranslatef(gl.xres*0.3, gl.yres*0.6, 0);
+    glTranslatef(gl.xres*0.425, gl.yres*0.575, 0);
     glBindTexture(GL_TEXTURE_2D, gl.rightarrowkeyTexture);
     glEnable(GL_ALPHA_TEST);
     //glEnable(GL_TEXTURE_2D);
@@ -688,11 +701,11 @@ void tutorial_menu2(int xres, int yres)
     //=================================================
     //Spacebar Key=====================================
     //=================================================
-    h = 15;
-    w = 50;
+    h = 20;
+    w = 60;
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
-    glTranslatef(gl.xres*0.3, gl.yres*0.5, 0);
+    glTranslatef(gl.xres*0.39, gl.yres*0.475, 0);
     glBindTexture(GL_TEXTURE_2D, gl.spacebarkeyTexture);
     glEnable(GL_ALPHA_TEST);
     //glEnable(GL_TEXTURE_2D);
@@ -713,11 +726,11 @@ void tutorial_menu2(int xres, int yres)
     //=================================================
     //Up Arrow Key=====================================
     //=================================================
-    h = 15;
-    w = 15;
+    h = 25;
+    w = 25;
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
-    glTranslatef(gl.xres*0.3, gl.yres*0.4, 0);
+    glTranslatef(gl.xres*0.36, gl.yres*0.675, 0);
     glBindTexture(GL_TEXTURE_2D, gl.uparrowkeyTexture);
     glEnable(GL_ALPHA_TEST);
     //glEnable(GL_TEXTURE_2D);
@@ -736,13 +749,39 @@ void tutorial_menu2(int xres, int yres)
     //=================================================
 
     //=================================================
-    //Enter Key========================================
+    //Down Arrow Key=====================================
     //=================================================
     h = 25;
-    w = 45;
+    w = 25;
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
-    glTranslatef(gl.xres*0.3, gl.yres*0.3, 0);
+    glTranslatef(gl.xres*0.425, gl.yres*0.675, 0);
+    glBindTexture(GL_TEXTURE_2D, gl.uparrowkeyTexture);
+    glEnable(GL_ALPHA_TEST);
+    //glEnable(GL_TEXTURE_2D);
+    glAlphaFunc(GL_GREATER, 0.0f);
+    glColor4ub(255,255,255,255);
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0, 0.0); glVertex2i(-w,-h);
+    glTexCoord2f(0.0, 1.0); glVertex2i(-w,h);
+    glTexCoord2f(1.0, 1.0); glVertex2i(w,h);
+    glTexCoord2f(1.0, 0.0); glVertex2i(w,-h);
+    glEnd();
+    glPopMatrix();
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_ALPHA_TEST);
+    //glDisable(GL_TEXTURE_2D);
+    //=================================================
+
+
+    //=================================================
+    //Enter Key========================================
+    //=================================================
+    h = 22;
+    w = 50;
+    glPushMatrix();
+    glColor3f(1.0,1.0,1.0);
+    glTranslatef(gl.xres*0.395, gl.yres*0.375, 0);
     glBindTexture(GL_TEXTURE_2D, gl.enterkeyTexture);
     glEnable(GL_ALPHA_TEST);
     //glEnable(GL_TEXTURE_2D);
@@ -762,10 +801,82 @@ void tutorial_menu2(int xres, int yres)
 
     Rect r;    
 
-    r.bot = yres/2 - 100;
+    r.bot = yres*0.89;
+    r.left = xres*0.235;
+    r.center = yres/2;
+    for (int i = 0; i < 26; i++) {
+        ggprint13(&r, 20, white, "||");
+    }
+
+    r.bot = yres*0.89;
+    r.left = xres*0.77;
+    r.center = yres/2;
+    for (int i = 0; i < 26; i++) {
+        ggprint13(&r, 20, white, "||");
+    }
+
+    r.bot = yres*0.05;
+    r.left = xres*0.38;
+    r.center = yres/2;
+    Shape s;
+    Shape box[5];
+    for (int i = 0; i < 5; i++) {
+        box[i].width = 10;
+        box[i].height = 3;
+        box[i].center.x = r.left + 15;
+        box[i].center.y = 160 - (i*8);
+        box[i].center.z = 0;
+        s = box[i];
+        glPushMatrix();
+        glColor3ub(255, 0, 255);
+        glTranslatef(s.center.x, s.center.y, s.center.z);
+        float w = s.width;
+        float h = s.height;
+        glBegin(GL_QUADS);
+        glVertex2i(-w, -h);
+        glVertex2i(-w, h);
+        glVertex2i(w, h);
+        glVertex2i(w, -h);
+        glEnd();
+        glPopMatrix();
+    }
+
+    r.bot = yres*0.9;
     r.left = xres/2;
     r.center = yres/2;
-    ggprint13(&r, 20, white, "'ENTER' on either");
+    ggprint13(&r, 20, white, "==============================================");
+    ggprint13(&r, 20, white, "                  Controls                    ");
+    ggprint13(&r, 20, white, "==============================================");
+    ggprint13(&r, 20, white, "                                              ");
+    ggprint13(&r, 20, white, "                            Go Back a Page    ");
+    ggprint13(&r, 20, white, "                                              ");
+
+    r.bot = yres*0.68;
+    r.left = xres/2;
+    r.center = yres/2;
+    ggprint13(&r, 20, white, "                           Jump               ");
+    ggprint13(&r, 20, white, "                            Navigate Up/Down  ");
+    ggprint13(&r, 20, white, "                                              ");
+    ggprint13(&r, 20, white, "                            Move Left/Right   ");
+    ggprint13(&r, 20, white, "                           Navigate Left/Right");
+    ggprint13(&r, 20, white, "                                              ");
+    ggprint13(&r, 20, white, "                            Shoot             ");
+
+    r.bot = yres*0.4;
+    r.left = xres/2;
+    r.center = yres/2;
+    ggprint13(&r, 20, white, "                                              ");
+    ggprint13(&r, 20, white, "                           Select/Start/Accept");
+    ggprint13(&r, 20, white, "                                              ");
+    ggprint13(&r, 20, white, "                                              ");
+    ggprint13(&r, 20, white, "                                              ");
+    ggprint13(&r, 20, white, "                             Health           ");
+    ggprint13(&r, 20, white, "                                              ");
+    ggprint13(&r, 20, white, "   __     __  __                              ");
+    ggprint13(&r, 20, white, "    |    | o  __| __|        Timer/Score      ");
+    ggprint13(&r, 20, white, "  |__| o |__  __|                             ");
+    ggprint13(&r, 20, white, "                                              ");
+    ggprint13(&r, 20, white, "==============================================");
 
     r.bot = yres*0.1;
     r.left = xres*0.9;
@@ -782,6 +893,7 @@ void tutorial_menu2(int xres, int yres)
         if (gl.display_tutorialmenu) {
             gl.display_tutorialmenu2 = false;
             gl.display_tutorialmenu = true;
+            gl.keys[XK_Tab] = false;
         }
     }
 } 
@@ -929,11 +1041,23 @@ void characterselection_menu(int xres, int yres)
     int highlight_y;
 
     if (gl.menu_position == 1) {
-        highlight_x = xres*0.25;
-        highlight_y = yres*0.5;
+        highlight_x = xres*0.22;
+        highlight_y = yres*0.68;
     } else if (gl.menu_position == 2) {
-        highlight_x = xres*0.75;
-        highlight_y = yres*0.5;
+        highlight_x = xres*0.5;
+        highlight_y = yres*0.68;
+    } else if (gl.menu_position == 3) {
+        highlight_x = xres*0.78;
+        highlight_y = yres*0.68;
+    } else if (gl.menu_position == 4) {
+        highlight_x = xres*0.22;
+        highlight_y = yres*0.31;
+    } else if (gl.menu_position == 5) {
+        highlight_x = xres*0.5;
+        highlight_y = yres*0.31;
+    } else if (gl.menu_position == 6) {
+        highlight_x = xres*0.78;
+        highlight_y = yres*0.31;
     }
 
     //=================================================
@@ -960,8 +1084,8 @@ void characterselection_menu(int xres, int yres)
     //=================================================
     //Text Highlight===================================
     //=================================================
-    float h = 175;
-    float w = 175;
+    float h = 125;
+    float w = 125;
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
     glTranslatef(highlight_x, highlight_y, 0);
@@ -985,11 +1109,11 @@ void characterselection_menu(int xres, int yres)
     //=================================================
     //Frame 1 Display==================================
     //=================================================
-    h = 100;	
-    w = 100;
+    h = 80;	
+    w = 80;
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
-    glTranslatef(xres*0.25, yres*0.5, 0);
+    glTranslatef(xres*0.22, yres*0.31, 0);
     glBindTexture(GL_TEXTURE_2D, gl.frameTexture);
     //glEnable(GL_ALPHA_TEST);
     //glEnable(GL_TEXTURE_2D);
@@ -1010,11 +1134,11 @@ void characterselection_menu(int xres, int yres)
     //=================================================
     //Frame 2 Display==================================
     //=================================================
-    h = 100;	
-    w = 100;
+    h = 80;	
+    w = 80;
     glPushMatrix();
     glColor3f(1.0,1.0,1.0);
-    glTranslatef(xres*0.75, yres*0.5, 0);
+    glTranslatef(xres*0.5, yres*0.31, 0);
     glBindTexture(GL_TEXTURE_2D, gl.frameTexture);
     //glEnable(GL_ALPHA_TEST);
     //glEnable(GL_TEXTURE_2D);
@@ -1032,12 +1156,268 @@ void characterselection_menu(int xres, int yres)
     //glDisable(GL_TEXTURE_2D);
     //=================================================
 
-    Rect r;    
+    //=================================================
+    //Frame 3 Display==================================
+    //=================================================
+    h = 80;	
+    w = 80;
+    glPushMatrix();
+    glColor3f(1.0,1.0,1.0);
+    glTranslatef(xres*0.78, yres*0.31, 0);
+    glBindTexture(GL_TEXTURE_2D, gl.frameTexture);
+    //glEnable(GL_ALPHA_TEST);
+    //glEnable(GL_TEXTURE_2D);
+    glAlphaFunc(GL_GREATER, 0.0f);
+    glColor4ub(255,255,255,255);
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0, 1.0); glVertex2i(-w,-h);
+    glTexCoord2f(0.0, 0.0); glVertex2i(-w,h);
+    glTexCoord2f(1.0, 0.0); glVertex2i(w,h);
+    glTexCoord2f(1.0, 1.0); glVertex2i(w,-h);
+    glEnd();
+    glPopMatrix();
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    //glDisable(GL_ALPHA_TEST);
+    //glDisable(GL_TEXTURE_2D);
+    //=================================================
 
-    r.bot = yres/2 - 100;
+    //=================================================
+    //Frame 4 Display==================================
+    //=================================================
+    h = 80;	
+    w = 80;
+    glPushMatrix();
+    glColor3f(1.0,1.0,1.0);
+    glTranslatef(xres*0.22, yres*0.68, 0);
+    glBindTexture(GL_TEXTURE_2D, gl.frameTexture);
+    //glEnable(GL_ALPHA_TEST);
+    //glEnable(GL_TEXTURE_2D);
+    glAlphaFunc(GL_GREATER, 0.0f);
+    glColor4ub(255,255,255,255);
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0, 1.0); glVertex2i(-w,-h);
+    glTexCoord2f(0.0, 0.0); glVertex2i(-w,h);
+    glTexCoord2f(1.0, 0.0); glVertex2i(w,h);
+    glTexCoord2f(1.0, 1.0); glVertex2i(w,-h);
+    glEnd();
+    glPopMatrix();
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    //glDisable(GL_ALPHA_TEST);
+    //glDisable(GL_TEXTURE_2D);
+    //=================================================
+
+    //=================================================
+    //Frame 5 Display==================================
+    //=================================================
+    h = 80;	
+    w = 80;
+    glPushMatrix();
+    glColor3f(1.0,1.0,1.0);
+    glTranslatef(xres*0.5, yres*0.68, 0);
+    glBindTexture(GL_TEXTURE_2D, gl.frameTexture);
+    //glEnable(GL_ALPHA_TEST);
+    //glEnable(GL_TEXTURE_2D);
+    glAlphaFunc(GL_GREATER, 0.0f);
+    glColor4ub(255,255,255,255);
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0, 1.0); glVertex2i(-w,-h);
+    glTexCoord2f(0.0, 0.0); glVertex2i(-w,h);
+    glTexCoord2f(1.0, 0.0); glVertex2i(w,h);
+    glTexCoord2f(1.0, 1.0); glVertex2i(w,-h);
+    glEnd();
+    glPopMatrix();
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    //glDisable(GL_ALPHA_TEST);
+    //glDisable(GL_TEXTURE_2D);
+    //=================================================
+
+    //=================================================
+    //Frame 6 Display==================================
+    //=================================================
+    h = 80;	
+    w = 80;
+    glPushMatrix();
+    glColor3f(1.0,1.0,1.0);
+    glTranslatef(xres*0.78, yres*0.68, 0);
+    glBindTexture(GL_TEXTURE_2D, gl.frameTexture);
+    //glEnable(GL_ALPHA_TEST);
+    //glEnable(GL_TEXTURE_2D);
+    glAlphaFunc(GL_GREATER, 0.0f);
+    glColor4ub(255,255,255,255);
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0, 1.0); glVertex2i(-w,-h);
+    glTexCoord2f(0.0, 0.0); glVertex2i(-w,h);
+    glTexCoord2f(1.0, 0.0); glVertex2i(w,h);
+    glTexCoord2f(1.0, 1.0); glVertex2i(w,-h);
+    glEnd();
+    glPopMatrix();
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    //glDisable(GL_ALPHA_TEST);
+    //glDisable(GL_TEXTURE_2D);
+    //=================================================
+
+    //=================================================
+    //Char 1 Display==================================
+    //=================================================
+    float cy = yres*0.68;
+    float cx = xres*0.22;
+    h = 50.0;
+    w = h * .903;
+    glPushMatrix();
+    glColor3f(1.0,1.0,1.0);
+    glBindTexture(GL_TEXTURE_2D, gl.maincharacter1Texture);
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER, 0.0f);
+    glColor4ub(255,255,255,255);
+    int ix = gl.maincharacterFrame % 4;
+    int iy = 3;
+    glBegin(GL_QUADS);
+    glTexCoord2f(ix + .25, iy + .333); glVertex2i(cx+w,cy-h);
+    glTexCoord2f(ix      , iy + .333); glVertex2i(cx-w,cy-h);
+    glTexCoord2f(ix      , iy       ); glVertex2i(cx-w,cy+h);
+    glTexCoord2f(ix + .25, iy       ); glVertex2i(cx+w,cy+h);
+    glEnd();
+    glPopMatrix();
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    //glDisable(GL_ALPHA_TEST);
+    //=================================================
+
+    //=================================================
+    //Char 2 Display===================================
+    //=================================================
+    cy = yres*0.68;
+    cx = xres*0.5;
+    h = 50.0;
+    w = h * .903;
+    glPushMatrix();
+    glColor3f(1.0,1.0,1.0);
+    glBindTexture(GL_TEXTURE_2D, gl.maincharacter2Texture);
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER, 0.0f);
+    glColor4ub(255,255,255,255);
+    ix = gl.maincharacterFrame % 4;
+    iy = 3;
+    glBegin(GL_QUADS);
+    glTexCoord2f(ix + .25, iy + .333); glVertex2i(cx+w,cy-h);
+    glTexCoord2f(ix      , iy + .333); glVertex2i(cx-w,cy-h);
+    glTexCoord2f(ix      , iy       ); glVertex2i(cx-w,cy+h);
+    glTexCoord2f(ix + .25, iy       ); glVertex2i(cx+w,cy+h);
+    glEnd();
+    glPopMatrix();
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    //glDisable(GL_ALPHA_TEST);
+    //=================================================
+
+    //=================================================
+    //Char 3 Display===================================
+    //=================================================
+    cy = yres*0.68;
+    cx = xres*0.78;
+    h = 50.0;
+    w = h * .903;
+    glPushMatrix();
+    glColor3f(1.0,1.0,1.0);
+    glBindTexture(GL_TEXTURE_2D, gl.maincharacter3Texture);
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER, 0.0f);
+    glColor4ub(255,255,255,255);
+    ix = gl.maincharacterFrame % 4;
+    iy = 3;
+    glBegin(GL_QUADS);
+    glTexCoord2f(ix + .25, iy + .333); glVertex2i(cx+w,cy-h);
+    glTexCoord2f(ix      , iy + .333); glVertex2i(cx-w,cy-h);
+    glTexCoord2f(ix      , iy       ); glVertex2i(cx-w,cy+h);
+    glTexCoord2f(ix + .25, iy       ); glVertex2i(cx+w,cy+h);
+    glEnd();
+    glPopMatrix();
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    //glDisable(GL_ALPHA_TEST);
+    //=================================================
+
+    //=================================================
+    //Char 4 Display===================================
+    //=================================================
+    cy = yres*0.33;
+    cx = xres*0.22;
+    h = 50.0;
+    w = h * .903;
+    glPushMatrix();
+    glColor3f(1.0,1.0,1.0);
+    glBindTexture(GL_TEXTURE_2D, gl.maincharacter4Texture);
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER, 0.0f);
+    glColor4ub(255,255,255,255);
+    ix = gl.maincharacterFrame % 4;
+    iy = 3;
+    glBegin(GL_QUADS);
+    glTexCoord2f(ix + .25, iy + .333); glVertex2i(cx+w,cy-h);
+    glTexCoord2f(ix      , iy + .333); glVertex2i(cx-w,cy-h);
+    glTexCoord2f(ix      , iy       ); glVertex2i(cx-w,cy+h);
+    glTexCoord2f(ix + .25, iy       ); glVertex2i(cx+w,cy+h);
+    glEnd();
+    glPopMatrix();
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    //glDisable(GL_ALPHA_TEST);
+    //=================================================
+
+    //=================================================
+    //Char 5 Display===================================
+    //=================================================
+    cy = yres*0.33;
+    cx = xres*0.5;
+    h = 50.0;
+    w = h * .903;
+    glPushMatrix();
+    glColor3f(1.0,1.0,1.0);
+    glBindTexture(GL_TEXTURE_2D, gl.maincharacter4Texture);
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER, 0.0f);
+    glColor4ub(255,255,255,255);
+    ix = gl.maincharacterFrame % 4;
+    iy = 3;
+    glBegin(GL_QUADS);
+    glTexCoord2f(ix + .25, iy + .333); glVertex2i(cx+w,cy-h);
+    glTexCoord2f(ix      , iy + .333); glVertex2i(cx-w,cy-h);
+    glTexCoord2f(ix      , iy       ); glVertex2i(cx-w,cy+h);
+    glTexCoord2f(ix + .25, iy       ); glVertex2i(cx+w,cy+h);
+    glEnd();
+    glPopMatrix();
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    //glDisable(GL_ALPHA_TEST);
+    //=================================================
+
+    //=================================================
+    //Char 6 Display===================================
+    //=================================================
+    cy = yres*0.33;
+    cx = xres*0.78;
+    h = 50.0;
+    w = h * .903;
+    glPushMatrix();
+    glColor3f(1.0,1.0,1.0);
+    glBindTexture(GL_TEXTURE_2D, gl.maincharacter4Texture);
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER, 0.0f);
+    glColor4ub(255,255,255,255);
+    ix = gl.maincharacterFrame % 4;
+    iy = 3;
+    glBegin(GL_QUADS);
+    glTexCoord2f(ix + .25, iy + .333); glVertex2i(cx+w,cy-h);
+    glTexCoord2f(ix      , iy + .333); glVertex2i(cx-w,cy-h);
+    glTexCoord2f(ix      , iy       ); glVertex2i(cx-w,cy+h);
+    glTexCoord2f(ix + .25, iy       ); glVertex2i(cx+w,cy+h);
+    glEnd();
+    glPopMatrix();
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    //glDisable(GL_ALPHA_TEST);
+    //=================================================
+
+	Rect r;    
+
+    r.bot = yres/2 - 250;
     r.left = xres/2;
     r.center = yres/2;
-    ggprint13(&r, 20, white, "'ENTER' on either");
+    ggprint13(&r, 20, white, "CHARACTER SELECTION");
 
     if (gl.keys[XK_Return]) {
         if (gl.menu_position == 1) {
@@ -1051,8 +1431,32 @@ void characterselection_menu(int xres, int yres)
             gl.display_characterselectionmenu = false;
             gl.display_levelselectionmenu = true;
             gl.menu_position = 1;
+            gl.keys[XK_Return] = false; 
+        } else if (gl.menu_position == 3) {
+            //gl.characterSelect = 1;        // need to change later
+            gl.display_characterselectionmenu = false;
+            gl.display_levelselectionmenu = true;
+            gl.menu_position = 1;
             gl.keys[XK_Return] = false;
-        }
+        } else if (gl.menu_position == 4) {
+            //gl.characterSelect = 1;        // need to change later
+            gl.display_characterselectionmenu = false;
+            gl.display_levelselectionmenu = true;
+            gl.menu_position = 1;
+            gl.keys[XK_Return] = false;
+        } else if (gl.menu_position == 5) {
+            //gl.characterSelect = 1;        // need to change later
+            gl.display_characterselectionmenu = false;
+            gl.display_levelselectionmenu = true;
+            gl.menu_position = 1;
+            gl.keys[XK_Return] = false;
+        } else if (gl.menu_position == 6) {
+            //gl.characterSelect = 1;        // need to change later
+            gl.display_characterselectionmenu = false;
+            gl.display_levelselectionmenu = true;
+            gl.menu_position = 1;
+            gl.keys[XK_Return] = false;
+	}
     }
 
     if (gl.keys[XK_Tab]) {
@@ -1246,17 +1650,20 @@ void credits_screen(int xres, int yres)
     ggprint13(&r, 16, white, "Eddie Velasco");
     ggprint13(&r, 16, white, "Simran Singh");
 
-    r.bot = yres/2 - 100;
-    r.left = xres/2;
-    r.center = yres/2;
-    ggprint13(&r, 20, white, "'TAB' to go back");
-
     if (gl.keys[XK_Tab]) {
         if (gl.display_creditsmenu) {
             gl.display_creditsmenu = false;
             gl.display_startmenu = true;
         }
-    } 
+    }
+
+    if (gl.keys[XK_Return]) {
+        if (gl.display_creditsmenu) {
+            gl.display_creditsmenu = false;
+            gl.display_startmenu = true;
+            gl.keys[XK_Return] = false;
+        }
+    }
 }
 
 void standingPose(int xres)
@@ -1334,15 +1741,48 @@ void shootingPoseLeft(int xres)
     //glDisable(GL_ALPHA_TEST);
 }
 
+// Problem with PPM files not unlinking
+void removePPM(void)
+{
+    remove("./images/mainChar1.ppm");
+    remove("./images/mainChar2.ppm");
+    remove("./images/mainChar3.ppm");
+    remove("./images/mainChar4.ppm");
+    remove("./images/OgirdorLogo.ppm");
+    remove("./images/MainMenuBackground.ppm");
+    remove("./images/Play.ppm");
+    remove("./images/Tutorial.ppm");
+    remove("./images/HighScores.ppm");
+    remove("./images/Credits.ppm");
+    remove("./images/Exit.ppm");
+    remove("./images/TextHighlight.ppm");
+    remove("./images/LevelSelection.ppm");
+    remove("./images/CharacterSelection.ppm");
+    remove("./images/Frame.ppm");
+    remove("./images/backgroundImage.ppm");
+    remove("./images/platformImage.ppm");
+    remove("./images/AttackDmg.ppm");
+    remove("./images/BlueEnemy.ppm");
+    remove("./images/GreenEnemy.ppm");
+    remove("./images/HeartAdd.ppm");
+    remove("./images/RedEnemy.ppm");
+    remove("./images/Shield.ppm");
+    remove("./images/SpeedBoost.ppm");
+    remove("./images/TabKey.ppm");
+    remove("./images/LeftArrowKey.ppm");
+    remove("./images/RightArrowKey.ppm");
+    remove("./images/SpacebarKey.ppm");
+    remove("./images/UpArrowKey.ppm");
+    remove("./images/EnterKey.ppm");
+    remove("./images/BlueBox.ppm");
+    remove("./images/AmericaBall.ppm");
+    remove("./images/MoltenBall.ppm");
+    remove("./images/PurpleBall.ppm");
+}
 
 /*void view_highscores()
 {
 //have link to HTML page for high scores
-}
+}*/
 
-void credits_screen(int xres, int yres)
-{
-//display credits here, developers names
-}
-*/
 

@@ -45,7 +45,7 @@ typedef Flt Matrix[4][4];
 #define VecCopy(a,b) (b)[0]=(a)[0];(b)[1]=(a)[1];(b)[2]=(a)[2]
 #define VecDot(a,b)	((a)[0]*(b)[0]+(a)[1]*(b)[1]+(a)[2]*(b)[2])
 #define VecSub(a,b,c) (c)[0]=(a)[0]-(b)[0]; \
-                             (c)[1]=(a)[1]-(b)[1]; \
+			     (c)[1]=(a)[1]-(b)[1]; \
 (c)[2]=(a)[2]-(b)[2]
 //constants
 const float timeslice = 1.0f;
@@ -60,6 +60,8 @@ Global gl;
 UserInput input;
 Level lev;
 Sprite heart2, heart1, speedboost1, shield1, mainChar, turret, enemy1, mariEnemy;
+Particle particle[20];
+Game game;
 //X Windows variables
 Display *dpy;
 Window win;
@@ -87,6 +89,7 @@ extern void playername_menu(int, int, char [], UserInput &input);
 extern void getPlayerName(int, UserInput &input);
 extern void assign_playername(char [], UserInput &input);
 extern void PlayerStart(int, char [], UserInput &input);
+extern void removePPM(void);
 //extern void convertpng2ppm(void);
 //extern void getImage(void);
 //extern void generateTextures(void);
@@ -102,6 +105,8 @@ extern void shootStandLeft(float,float,float,float,float,float);
 extern void standRight(float,float,float,float,float,float);
 extern void standLeft(float,float,float,float,float,float);
 extern void renderChristianSprites();
+extern void christianInit();
+extern void particleMove();
 extern void clearScreen();
 extern void moveSpriteRight(Sprite *);
 extern void moveSpriteLeft(Sprite *);
@@ -125,17 +130,18 @@ int main(void)
     init();
     csound("./sound/a.wav");
     while (!gl.done) {
-        while (XPending(dpy)) {
-            XEvent e;
-            XNextEvent(dpy, &e);
-            checkResize(&e);
-            //checkMouse(&e);
-            checkKeys(&e);
-        }
-        physics();
-        render();
-        glXSwapBuffers(dpy, win);
+	while (XPending(dpy)) {
+	    XEvent e;
+	    XNextEvent(dpy, &e);
+	    checkResize(&e);
+	    //checkMouse(&e);
+	    checkKeys(&e);
+	}
+	physics();
+	render();
+	glXSwapBuffers(dpy, win);
     }
+    removePPM();
     cleanupXWindows();
     cleanup_fonts();
     return 0;
@@ -147,19 +153,14 @@ void init()
     //can be offscreen. You can also set y here
     enemy1.cx = 600;
     enemy1.cy = 90;
+    mainChar.pos[0] = 300.0;
+    mainChar.pos[1] = mainChar.pos[2] = 0.0;
+    mainChar.vel[0] = mainChar.vel[1] = mainChar.vel[2] = 0.0;
     mariEnemy.cx = 100;
-    mariEnemy.cy = 90;
+    mariEnemy.cy = 0;
     turret.cx = 300;
     turret.cy = 90;
-    mainChar.cy = 90;
-    shield1.cx = 650;
-    shield1.cy = 90;
-    heart1.cx = 700;
-    heart1.cy = 90;
-    heart2.cx = 800;
-    heart2.cy = 90;
-    speedboost1.cx= 750;
-    speedboost1.cy = 90;
+    christianInit();
 }
 
 void cleanupXWindows(void)
@@ -189,22 +190,22 @@ void initXWindows(void)
     setupScreenRes(gl.xres, gl.yres);
     dpy = XOpenDisplay(NULL);
     if (dpy == NULL) {
-        printf("\n\tcannot connect to X server\n\n");
-        exit(EXIT_FAILURE);
+	printf("\n\tcannot connect to X server\n\n");
+	exit(EXIT_FAILURE);
     }
     Window root = DefaultRootWindow(dpy);
     XVisualInfo *vi = glXChooseVisual(dpy, 0, att);
     if (vi == NULL) {
-        printf("\n\tno appropriate visual found\n\n");
-        exit(EXIT_FAILURE);
+	printf("\n\tno appropriate visual found\n\n");
+	exit(EXIT_FAILURE);
     } 
     Colormap cmap = XCreateColormap(dpy, root, vi->visual, AllocNone);
     swa.colormap = cmap;
     swa.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask |
-        StructureNotifyMask | SubstructureNotifyMask;
+	StructureNotifyMask | SubstructureNotifyMask;
     win = XCreateWindow(dpy, root, 0, 0, gl.xres, gl.yres, 0,
-            vi->depth, InputOutput, vi->visual,
-            CWColormap | CWEventMask, &swa);
+	    vi->depth, InputOutput, vi->visual,
+	    CWColormap | CWEventMask, &swa);
     GLXContext glc = glXCreateContext(dpy, vi, NULL, GL_TRUE);
     glXMakeCurrent(dpy, win, glc);
     setTitle();
@@ -236,18 +237,18 @@ unsigned char *buildAlphaData(Ppmimage *img)
     unsigned char t1 = *(data+1);
     unsigned char t2 = *(data+2);
     for (i=0; i<img->width * img->height * 3; i+=3) {
-        a = *(data+0);
-        b = *(data+1);
-        c = *(data+2);
-        *(ptr+0) = a;
-        *(ptr+1) = b;
-        *(ptr+2) = c;
-        *(ptr+3) = 1;
-        if (a==t0 && b==t1 && c==t2)
-            *(ptr+3) = 0;
-        //-----------------------------------------------
-        ptr += 4;
-        data += 3;
+	a = *(data+0);
+	b = *(data+1);
+	c = *(data+2);
+	*(ptr+0) = a;
+	*(ptr+1) = b;
+	*(ptr+2) = c;
+	*(ptr+3) = 1;
+	if (a==t0 && b==t1 && c==t2)
+	    *(ptr+3) = 0;
+	//-----------------------------------------------
+	ptr += 4;
+	data += 3;
     }
     return newdata;
 }
@@ -278,11 +279,14 @@ void initOpengl(void)
     //
 
     //---CHRISTIANS FUNCTION--------//
-    int characterSelect = 1; //Rodrigo, when you make selection in char selection, 
+    int characterSelect = 3; //Rodrigo, when you make selection in char selection, 
     //store it in something similar
 
     // Convertpng2ppm
-    //system("convert ./images/mainChar.png ./images/mainChar.ppm");
+    system("convert ./images/mainChar1.png ./images/mainChar1.ppm");
+    system("convert ./images/mainChar2.png ./images/mainChar2.ppm");
+    system("convert ./images/mainChar3.png ./images/mainChar3.ppm");
+    system("convert ./images/mainChar4.png ./images/mainChar4.ppm");
     system("convert ./images/OgirdorLogo.png ./images/OgirdorLogo.ppm");
     system("convert ./images/MainMenuBackground.png ./images/MainMenuBackground.ppm");
     system("convert ./images/Play.png ./images/Play.ppm");
@@ -296,6 +300,8 @@ void initOpengl(void)
     system("convert ./images/Frame.png ./images/Frame.ppm");
     system("convert ./images/backgroundImage.png ./images/backgroundImage.ppm");
     system("convert ./images/platformImage.png ./images/platformImage.ppm");
+    system("convert ./images/lavaImage.png ./images/lavaImage.ppm");
+    system("convert ./images/metalImage.png ./images/metalImage.ppm");
     system("convert ./images/AttackDmg.png ./images/AttackDmg.ppm");
     system("convert ./images/BlueEnemy.png ./images/BlueEnemy.ppm");
     system("convert ./images/GreenEnemy.png ./images/GreenEnemy.ppm");
@@ -310,11 +316,18 @@ void initOpengl(void)
     system("convert ./images/UpArrowKey.png ./images/UpArrowKey.ppm");
     system("convert ./images/EnterKey.png ./images/EnterKey.ppm");
     system("convert ./images/BlueBox.png ./images/BlueBox.ppm");
+    system("convert ./images/AmericaBall.png ./images/AmericaBall.ppm");
+    system("convert ./images/MoltenBall.png ./images/MoltenBall.ppm");
+    system("convert ./images/PurpleBall.png ./images/PurpleBall.ppm");
 
     //===========================================================
     // Get Images	
     //===========================================================
     gl.maincharacterImage = characterImage(characterSelect);
+    gl.maincharacter1Image = ppm6GetImage("./images/mainChar1.ppm");
+    gl.maincharacter2Image = ppm6GetImage("./images/mainChar2.ppm"); 
+    gl.maincharacter3Image = ppm6GetImage("./images/mainChar3.ppm");
+    gl.maincharacter4Image = ppm6GetImage("./images/mainChar4.ppm");
     gl.logoImage = ppm6GetImage("./images/OgirdorLogo.ppm");
     gl.mainmenubackgroundImage = ppm6GetImage("./images/MainMenuBackground.ppm");
     gl.playImage = ppm6GetImage("./images/Play.ppm");
@@ -329,6 +342,8 @@ void initOpengl(void)
     gl.turretImage = turretImage();
     gl.enemy1Image = enemy1image();
     gl.mari_image = mari_image();
+    gl.metalImage = ppm6GetImage("./images/metalImage.ppm");
+    gl.lavaImage = ppm6GetImage("./images/lavaImage.ppm");
     gl.backgroundImage = ppm6GetImage("./images/backgroundImage.ppm");
     gl.platformImage = ppm6GetImage("./images/platformImage.ppm");
     gl.attackdmgImage = ppm6GetImage("./images/AttackDmg.ppm");
@@ -345,12 +360,19 @@ void initOpengl(void)
     gl.uparrowkeyImage = ppm6GetImage("./images/UpArrowKey.ppm");
     gl.enterkeyImage = ppm6GetImage("./images/EnterKey.ppm");
     gl.blueboxImage = ppm6GetImage("./images/BlueBox.ppm");
+    gl.americaballImage = ppm6GetImage("./images/AmericaBall.ppm");
+    gl.moltenballImage = ppm6GetImage("./images/MoltenBall.ppm");
+    gl.purpleballImage = ppm6GetImage("./images/PurpleBall.ppm");
     //===========================================================
 
     //===========================================================
     // Generate Textures
     //===========================================================
     glGenTextures(1, &gl.maincharacterTexture);
+    glGenTextures(1, &gl.maincharacter1Texture);
+    glGenTextures(1, &gl.maincharacter2Texture);
+    glGenTextures(1, &gl.maincharacter3Texture);
+    glGenTextures(1, &gl.maincharacter4Texture);
     glGenTextures(1, &gl.mainmenubackgroundTexture);
     glGenTextures(1, &gl.turretTexture);
     glGenTextures(1, &gl.enemy1Texture);
@@ -365,6 +387,8 @@ void initOpengl(void)
     glGenTextures(1, &gl.levelselectionTexture);
     glGenTextures(1, &gl.characterselectionTexture);
     glGenTextures(1, &gl.frameTexture);
+    glGenTextures(1, &gl.lavaTexture);
+    glGenTextures(1, &gl.metalTexture);
     glGenTextures(1, &gl.backgroundTexture);
     glGenTextures(1, &gl.platformTexture);
     glGenTextures(1, &gl.attackdmgTexture);
@@ -380,11 +404,14 @@ void initOpengl(void)
     glGenTextures(1, &gl.spacebarkeyTexture);
     glGenTextures(1, &gl.uparrowkeyTexture);
     glGenTextures(1, &gl.enterkeyTexture);
-    glGenTextures(1, &gl.blueboxTexture);
+    glGenTextures(1, &gl.blueboxTexture);    
+    glGenTextures(1, &gl.americaballTexture);    
+    glGenTextures(1, &gl.moltenballTexture);    
+    glGenTextures(1, &gl.purpleballTexture);    
     //===========================================================
 
     //==============================================
-    // Main Character
+    // Main Character to be Loaded
     int w = gl.maincharacterImage->width;
     int h = gl.maincharacterImage->height;
     glBindTexture(GL_TEXTURE_2D, gl.maincharacterTexture);
@@ -392,9 +419,65 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *maincharacterData = buildAlphaData(gl.maincharacterImage);	
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, maincharacterData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, maincharacterData);
     free(maincharacterData);
     unlink("./images/mainChar.ppm");
+    //==============================================
+
+    //==============================================
+    // Main Character 1
+    w = gl.maincharacter1Image->width;
+    h = gl.maincharacter1Image->height;
+    glBindTexture(GL_TEXTURE_2D, gl.maincharacter1Texture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *maincharacter1Data = buildAlphaData(gl.maincharacter1Image);	
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+	    GL_RGBA, GL_UNSIGNED_BYTE, maincharacter1Data);
+    free(maincharacter1Data);
+    unlink("./images/mainChar1.ppm");
+    //==============================================
+
+    //==============================================
+    // Main Character 2
+    w = gl.maincharacter2Image->width;
+    h = gl.maincharacter2Image->height;
+    glBindTexture(GL_TEXTURE_2D, gl.maincharacter2Texture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *maincharacter2Data = buildAlphaData(gl.maincharacter2Image);	
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+	    GL_RGBA, GL_UNSIGNED_BYTE, maincharacter2Data);
+    free(maincharacter2Data);
+    unlink("./images/mainChar2.ppm");
+    //==============================================
+
+    //==============================================
+    // Main Character 3
+    w = gl.maincharacter3Image->width;
+    h = gl.maincharacter3Image->height;
+    glBindTexture(GL_TEXTURE_2D, gl.maincharacter3Texture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *maincharacter3Data = buildAlphaData(gl.maincharacter3Image);	
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+	    GL_RGBA, GL_UNSIGNED_BYTE, maincharacter3Data);
+    free(maincharacter3Data);
+    unlink("./images/mainChar3.ppm");
+    //==============================================
+
+    //==============================================
+    // Main Character 4
+    w = gl.maincharacter4Image->width;
+    h = gl.maincharacter4Image->height;
+    glBindTexture(GL_TEXTURE_2D, gl.maincharacter4Texture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *maincharacter4Data = buildAlphaData(gl.maincharacter4Image);	
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+	    GL_RGBA, GL_UNSIGNED_BYTE, maincharacter4Data);
+    free(maincharacter4Data);
+    unlink("./images/mainChar4.ppm");
     //==============================================
 
     //==============================================
@@ -405,9 +488,9 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *mainmenubackgroundData = 
-        buildAlphaData(gl.mainmenubackgroundImage);	
+	buildAlphaData(gl.mainmenubackgroundImage);	
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, mainmenubackgroundData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, mainmenubackgroundData);
     free(mainmenubackgroundData);
     unlink("./images/MainMenuBackground.ppm");
     //==============================================
@@ -421,7 +504,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *turretstuff = buildAlphaData(gl.turretImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, 
-            GL_RGBA, GL_UNSIGNED_BYTE, turretstuff);
+	    GL_RGBA, GL_UNSIGNED_BYTE, turretstuff);
     free(turretstuff);
     unlink("./images/Turret.ppm");
     //====================================================
@@ -435,7 +518,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *enemy1stuff = buildAlphaData(gl.enemy1Image);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, enemy1stuff);
+	    GL_RGBA, GL_UNSIGNED_BYTE, enemy1stuff);
     free(enemy1stuff);
     unlink("./images/enemy1.ppm");
     //===================================================
@@ -449,7 +532,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *mari_pointer = buildAlphaData(gl.mari_image);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, mari_pointer);
+	    GL_RGBA, GL_UNSIGNED_BYTE, mari_pointer);
     free(mari_pointer); 
     unlink("./images/Enemy_Mariachi_3.ppm");
     //====================================================
@@ -463,7 +546,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *logoData = buildAlphaData(gl.logoImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, logoData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, logoData);
     free(logoData);
     unlink("./images/OgirdorLogo.ppm");
     //===============================================================
@@ -477,7 +560,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *playData = buildAlphaData(gl.playImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, playData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, playData);
     free(playData);
     unlink("./images/Play.ppm");
     //===============================================================
@@ -491,7 +574,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *tutorialData = buildAlphaData(gl.tutorialImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, tutorialData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, tutorialData);
     free(tutorialData);
     unlink("./images/Tutorial.ppm");
     //===============================================================
@@ -505,7 +588,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *highscoresData = buildAlphaData(gl.highscoresImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, highscoresData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, highscoresData);
     free(highscoresData);
     unlink("./images/HighScores.ppm");
     //===============================================================
@@ -519,7 +602,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *creditsData = buildAlphaData(gl.creditsImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, creditsData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, creditsData);
     free(creditsData);
     unlink("./images/Credits.ppm");
     //===============================================================
@@ -533,7 +616,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *exitData = buildAlphaData(gl.exitImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, exitData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, exitData);
     free(exitData);
     unlink("./images/Exit.ppm");
     //===============================================================
@@ -547,7 +630,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *texthighlightData = buildAlphaData(gl.texthighlightImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, texthighlightData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, texthighlightData);
     free(exitData);
     unlink("./images/TextHighlight.ppm");
     //===============================================================
@@ -561,7 +644,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *levelselectionData = buildAlphaData(gl.levelselectionImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, levelselectionData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, levelselectionData);
     free(levelselectionData);
     unlink("./images/LevelSelection.ppm");
     //===============================================================
@@ -575,7 +658,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *characterselectionData = buildAlphaData(gl.characterselectionImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, characterselectionData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, characterselectionData);
     free(characterselectionData);
     unlink("./images/CharacterSelection.ppm");
     //===============================================================
@@ -589,7 +672,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *frameData = buildAlphaData(gl.frameImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, frameData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, frameData);
     free(frameData);
     unlink("./images/Frame.ppm");
     //===============================================================
@@ -603,13 +686,13 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *backgroundData = buildAlphaData(gl.backgroundImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, backgroundData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, backgroundData);
     free(backgroundData);
     unlink("./images/backgroundImage.ppm");
     //===============================================================
 
     //===============================================================
-    //Level Background
+    //Platform Texture
     w = gl.platformImage->width;
     h = gl.platformImage->height;	
     glBindTexture(GL_TEXTURE_2D, gl.platformTexture);
@@ -617,10 +700,39 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *platformData = buildAlphaData(gl.platformImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, platformData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, platformData);
     free(platformData);
     unlink("./images/platformImage.ppm");
     //===============================================================
+
+    //===============================================================
+    //lava Texture
+    w = gl.lavaImage->width;
+    h = gl.lavaImage->height;	
+    glBindTexture(GL_TEXTURE_2D, gl.lavaTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *lavaData = buildAlphaData(gl.lavaImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+	    GL_RGBA, GL_UNSIGNED_BYTE, lavaData);
+    free(lavaData);
+    unlink("./images/lavaImage.ppm");
+    //===============================================================
+
+    //===============================================================
+    //metal Texture
+    w = gl.metalImage->width;
+    h = gl.metalImage->height;	
+    glBindTexture(GL_TEXTURE_2D, gl.metalTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *metalData = buildAlphaData(gl.metalImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+	    GL_RGBA, GL_UNSIGNED_BYTE, metalData);
+    free(metalData);
+    unlink("./images/metalImage.ppm");
+    //===============================================================
+
     //===============================================================
     //Attack Dmg
     w = gl.attackdmgImage->width;
@@ -630,7 +742,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *attackdmgData = buildAlphaData(gl.attackdmgImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, attackdmgData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, attackdmgData);
     free(attackdmgData);
     unlink("./images/attackdmgImage.ppm");
     //===============================================================
@@ -644,7 +756,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *blueenemyData = buildAlphaData(gl.blueenemyImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, blueenemyData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, blueenemyData);
     free(blueenemyData);
     unlink("./images/blueenemyImage.ppm");
     //===============================================================
@@ -658,7 +770,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *greenenemyData = buildAlphaData(gl.greenenemyImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, greenenemyData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, greenenemyData);
     free(greenenemyData);
     unlink("./images/greenenemyImage.ppm");
     //===============================================================
@@ -672,7 +784,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *heartaddData = buildAlphaData(gl.heartaddImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, heartaddData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, heartaddData);
     free(heartaddData);
     unlink("./images/heartaddImage.ppm");
     //===============================================================
@@ -686,7 +798,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *redenemyData = buildAlphaData(gl.redenemyImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, redenemyData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, redenemyData);
     free(redenemyData);
     unlink("./images/redenemyImage.ppm");
     //===============================================================
@@ -700,7 +812,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *shieldData = buildAlphaData(gl.shieldImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, shieldData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, shieldData);
     free(shieldData);
     unlink("./images/shieldImage.ppm");
     //===============================================================
@@ -714,7 +826,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *speedboostData = buildAlphaData(gl.speedboostImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, speedboostData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, speedboostData);
     free(speedboostData);
     unlink("./images/speedboostImage.ppm");
     //===============================================================
@@ -728,7 +840,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *tabkeyData = buildAlphaData(gl.tabkeyImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, tabkeyData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, tabkeyData);
     free(tabkeyData);
     unlink("./images/tabkeyImage.ppm");
     //===============================================================
@@ -742,7 +854,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *leftarrowkeyData = buildAlphaData(gl.leftarrowkeyImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, leftarrowkeyData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, leftarrowkeyData);
     free(leftarrowkeyData);
     unlink("./images/leftarrowkeyImage.ppm");
     //===============================================================
@@ -756,7 +868,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *rightarrowkeyData = buildAlphaData(gl.rightarrowkeyImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, rightarrowkeyData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, rightarrowkeyData);
     free(rightarrowkeyData);
     unlink("./images/rightarrowkeyImage.ppm");
     //===============================================================
@@ -770,7 +882,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *spacebarkeyData = buildAlphaData(gl.spacebarkeyImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, spacebarkeyData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, spacebarkeyData);
     free(spacebarkeyData);
     unlink("./images/spacebarkeyImage.ppm");
     //===============================================================
@@ -784,7 +896,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *uparrowkeyData = buildAlphaData(gl.uparrowkeyImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, uparrowkeyData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, uparrowkeyData);
     free(uparrowkeyData);
     unlink("./images/uparrowkeyImage.ppm");
     //===============================================================
@@ -798,7 +910,7 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *enterkeyData = buildAlphaData(gl.enterkeyImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, enterkeyData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, enterkeyData);
     free(enterkeyData);
     unlink("./images/enterkeyImage.ppm");
     //===============================================================
@@ -812,11 +924,53 @@ void initOpengl(void)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     unsigned char *blueboxData = buildAlphaData(gl.blueboxImage);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, blueboxData);
+	    GL_RGBA, GL_UNSIGNED_BYTE, blueboxData);
     free(blueboxData);
     unlink("./images/blueboxImage.ppm");
     //===============================================================
 
+    //===============================================================
+    //America Ball
+    w = gl.americaballImage->width;
+    h = gl.americaballImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.americaballTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *americaballData = buildAlphaData(gl.americaballImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+	    GL_RGBA, GL_UNSIGNED_BYTE, americaballData);
+    free(americaballData);
+    unlink("./images/americaballImage.ppm");
+    //===============================================================
+
+    //===============================================================
+    //Molten Ball
+    w = gl.moltenballImage->width;
+    h = gl.moltenballImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.moltenballTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *moltenballData = buildAlphaData(gl.moltenballImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+	    GL_RGBA, GL_UNSIGNED_BYTE, moltenballData);
+    free(moltenballData);
+    unlink("./images/moltenballImage.ppm");
+    //===============================================================
+
+    //===============================================================
+    //Purple Ball
+    w = gl.purpleballImage->width;
+    h = gl.purpleballImage->height;
+    glBindTexture(GL_TEXTURE_2D, gl.purpleballTexture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    unsigned char *purpleballData = buildAlphaData(gl.purpleballImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+	    GL_RGBA, GL_UNSIGNED_BYTE, purpleballData);
+    free(purpleballData);
+    unlink("./images/purpleballImage.ppm");
+    //===============================================================
+    //
     //--------------------------------------------------------------------
 }
 
@@ -825,11 +979,11 @@ void checkResize(XEvent *e)
     //The ConfigureNotify is sent by the
     //server if the window is resized.
     if (e->type != ConfigureNotify)
-        return;
+	return;
     XConfigureEvent xce = e->xconfigure;
     if (xce.width != gl.xres || xce.height != gl.yres) {
-        //Window size did change.
-        reshapeWindow(xce.width, xce.height);
+	//Window size did change.
+	reshapeWindow(xce.width, xce.height);
     }
 }
 
@@ -837,16 +991,16 @@ void checkKeys(XEvent *e)
 {
     int key = XLookupKeysym(&e->xkey, 0);
     if (e->type == KeyRelease) {
-        gl.keys[key] = 0;
-        if (key == XK_Shift_L || key == XK_Shift_R)
-            return;
+	gl.keys[key] = 0;
+	if (key == XK_Shift_L || key == XK_Shift_R)
+	    return;
     }
     if (e->type == KeyPress) {
-        gl.keys[key] = 1;
-        if (key == XK_Shift_L || key == XK_Shift_R)
-            return;
+	gl.keys[key] = 1;
+	if (key == XK_Shift_L || key == XK_Shift_R)
+	    return;
     } else { 
-        return;
+	return;
     }
 
     //if (gl.display_playername)
@@ -854,269 +1008,327 @@ void checkKeys(XEvent *e)
 
     switch(key)
     {
-        case XK_Escape:
-            gl.done = 1;
-            break;
-        case XK_Tab:
-            if (gl.display_creditsmenu) {
-                gl.display_creditsmenu = false;
-                gl.display_startmenu = true;
-            }
-            if (gl.display_tutorialmenu) {
-                gl.display_tutorialmenu = false;
-                gl.display_startmenu = true;
-            }
-            if (gl.display_tutorialmenu2) {
-                gl.display_tutorialmenu2 = false;
-                gl.display_tutorialmenu = true;
-            }
-            break;
-        case XK_Down:
-            if (gl.display_startmenu && gl.menu_position != 5) {
+	case XK_Escape:
+	    gl.done = 1;
+	    break;
+	case XK_Tab:
+	    if (gl.display_creditsmenu) {
+		gl.display_creditsmenu = false;
+		gl.display_startmenu = true;
+		gl.keys[XK_Tab] = false;
+	    }
+	    if (gl.display_tutorialmenu) {
+		gl.display_tutorialmenu = false;
+		gl.display_startmenu = true;
+		gl.keys[XK_Tab] = false;
+	    }
+	    if (gl.display_tutorialmenu2) {
+		gl.display_tutorialmenu2 = false;
+		gl.display_tutorialmenu = true;
+		gl.keys[XK_Tab] = false;
+	    }
+	    break;
+
+	case XK_Right:
+            if (gl.display_characterselectionmenu && 
+                    gl.menu_position != 6)
                 gl.menu_position++;
-            } else if ((gl.display_characterselectionmenu ||
-                        gl.display_levelselectionmenu) &&
-                    gl.menu_position != 2) {
+            if (gl.display_levelselectionmenu && 
+                    gl.menu_position != 2)
                 gl.menu_position++;
-            }
             break;
-        case XK_Up:
-            if ((gl.display_startmenu ||
-                        gl.display_characterselectionmenu ||
-                        gl.display_levelselectionmenu)
-                    && gl.menu_position != 1) {
+        case XK_Left:
+            if ((gl.display_characterselectionmenu ||
+                   gl.display_levelselectionmenu) &&
+                    gl.menu_position != 1)
                 gl.menu_position--;
-            }
             break;
-        case XK_Return:
-            if (gl.display_startmenu) {
-                if (gl.menu_position == 1){
-                    gl.display_startmenu = false;
-                    gl.display_playernamemenu = true;
-                    gl.keys[XK_Return] = false;
-                    //gl.display_characterselectionmenu = true;
-                    //characterselection_menu(gl.xres, gl.yres);
-                    //gl.display_playernamemenu = true;
-                    //gl.state = CHARACTERSELECTIONMENU;
-                } else if (gl.menu_position == 2){
-                    gl.display_startmenu = false;
-                    gl.display_tutorialmenu = true;
-                    gl.keys[XK_Return] = false;
-                    //gl.menu_position = 1;
-                } else if (gl.menu_position == 3) {
-                    gl.display_startmenu = false;
-                    gl.display_highscoresmenu = true;
-                } else if (gl.menu_position == 4) {
-                    gl.display_startmenu = false;
-                    gl.display_creditsmenu = true;
-                } else if (gl.menu_position == 5) {
-                    gl.display_startmenu = false;
-                    gl.done = 1;
-                }
-            }
+        
+	case XK_Down:
+	    if (gl.display_startmenu && gl.menu_position != 5) {
+		gl.menu_position++;
+	    } /*else if (gl.display_characterselectionmenu &&
+		    gl.menu_position != 6) {
+		gl.menu_position++;
+	    } else if (gl.display_levelselectionmenu &&
+		    gl.menu_position != 2)
+		gl.menu_position++;*/
+	    break;
+	case XK_Up:
+	    if (gl.display_startmenu /*||
+			gl.display_characterselectionmenu ||
+			gl.display_levelselectionmenu)*/
+		    && gl.menu_position != 1) {
+		gl.menu_position--;
+	    }
+	    break;
+	case XK_Return:
+	    if (gl.display_startmenu) {
+		if (gl.menu_position == 1){
+		    gl.display_startmenu = false;
+		    gl.display_playernamemenu = true;
+		    gl.keys[XK_Return] = false;
+		    //gl.display_characterselectionmenu = true;
+		    //characterselection_menu(gl.xres, gl.yres);
+		    //gl.display_playernamemenu = true;
+		    //gl.state = CHARACTERSELECTIONMENU;
+		} else if (gl.menu_position == 2){
+		    gl.display_startmenu = false;
+		    gl.display_tutorialmenu = true;
+		    gl.keys[XK_Return] = false;
+		    //gl.menu_position = 1;
+		} else if (gl.menu_position == 3) {
+		    gl.display_startmenu = false;
+		    gl.display_highscoresmenu = true;
+		} else if (gl.menu_position == 4) {
+		    gl.display_startmenu = false;
+		    gl.display_creditsmenu = true;
+		    gl.keys[XK_Return] = false;
+		} else if (gl.menu_position == 5) {
+		    gl.display_startmenu = false;
+		    gl.done = 1;
+		}
+	    }
 
-            /*if (gl.display_characterselectionmenu) {
-                if (gl.menu_position == 1) {
-                    gl.characterSelect = 1;
-                    gl.display_characterselectionmenu = false;
-                    gl.display_levelselectionmenu = true;
-                    gl.keys[XK_Return] = false;
-                    //gl.state = LEVELSELECTIONMENU;
-                } else if (gl.menu_position == 2) {
-                    gl.characterSelect = 1;     // need to change
-                    gl.display_characterselectionmenu = false;
-                    gl.display_levelselectionmenu = true;
-                    gl.keys[XK_Return] = false;
-                    //gl.state = LEVELSELECTIONMENU;
-                }
-            }*/
+	    /*if (gl.display_characterselectionmenu) {
+	      if (gl.menu_position == 1) {
+	      gl.characterSelect = 1;
+	      gl.display_characterselectionmenu = false;
+	      gl.display_levelselectionmenu = true;
+	      gl.keys[XK_Return] = false;
+	    //gl.state = LEVELSELECTIONMENU;
+	    } else if (gl.menu_position == 2) {
+	    gl.characterSelect = 1;     // need to change
+	    gl.display_characterselectionmenu = false;
+	    gl.display_levelselectionmenu = true;
+	    gl.keys[XK_Return] = false;
+	    //gl.state = LEVELSELECTIONMENU;
+	    }
+	    }*/
+	    /*if (gl.display_levelselectionmenu) {
+	      if (gl.menu_position == 1) {
+	      gl.levelSelect = 1;
+	      gl.display_levelselectionmenu = false;
+	      gl.display_startinggame = true;
+	      gl.keys[XK_Return] = false;
+	    //gl.display_levelselectionmenu = true;
+	    //gl.state = GAMEPLAY;
+	    } else if (gl.menu_position == 2) {
+	    gl.levelSelect = 1;     // need to change
+	    gl.display_levelselectionmenu = false;
+	    gl.display_startinggame = true;
+	    gl.keys[XK_Return] = false;
+	    //gl.display_levelselectionmenu = true;
+	    //gl.state = GAMEPLAY;
+	    }
+	    }*/
 
-            /*if (gl.display_levelselectionmenu) {
-                if (gl.menu_position == 1) {
-                    gl.levelSelect = 1;
-                    gl.display_levelselectionmenu = false;
-                    gl.display_startinggame = true;
-                    gl.keys[XK_Return] = false;
-                    //gl.display_levelselectionmenu = true;
-                    //gl.state = GAMEPLAY;
-                } else if (gl.menu_position == 2) {
-                    gl.levelSelect = 1;     // need to change
-                    gl.display_levelselectionmenu = false;
-                    gl.display_startinggame = true;
-                    gl.keys[XK_Return] = false;
-                    //gl.display_levelselectionmenu = true;
-                    //gl.state = GAMEPLAY;
-                }
-            }*/
-
-            if (gl.display_creditsmenu) {
-                if (gl.keys[XK_Tab]) {
-                    gl.display_creditsmenu = false;
-                    gl.display_startmenu = true;
-                }
-            }
+	    if (gl.display_creditsmenu) {
+		if (gl.keys[XK_Tab]) {
+		    gl.display_creditsmenu = false;
+		    gl.display_startmenu = true;
+		}
+	    }
     }
 }
 
 void physics(void)
 {
+    //Start of Height Calculation
+    mainChar.pos[1] += mainChar.vel[1];
+    mainChar.vel[1] -= 0.2;
+    Flt dd = lev.ftsz[0];
+    //Flt offy = lev.tile_base;
+    //int ncols_to_render = gl.xres / lev.tilesize[0] + 2;
+    int col = (int)(gl.camera[0] / dd) + (300.0 / lev.tilesize[0] + 0.0); //changed from 1.0 to 0.0
+    col = col % lev.ncols;
+    int hgt = 0.0;
+    if (lev.dynamicHeight[col] != -1) {
+	hgt = lev.dynamicHeight[col];
+    } else {
+	for (int i = 0; i < lev.nrows; i++) {
+	    if (lev.arr[i][col] != ' ') {
+		hgt = i;
+		lev.dynamicHeight[col] = i;
+		break;
+	    }
+	}
+	//printf("%s %d \n", "Height Calculated for Column: ", col);
+    }
+    for (int i = 0; i < lev.nrows; i++) {
+	if (lev.arr[i][col] != ' ') {
+	    hgt = i;
+	    break;
+	}
+    }
+    //height of ball is (nrows-1-i)*tile_height + starting point.
+    Flt h = lev.tilesize[1] * (lev.nrows-hgt) + lev.tile_base;
+    if (mainChar.pos[1] <= h) {
+	mainChar.vel[1] = 0.0;
+	mainChar.pos[1] = h;
+    }
+    //End of Height
+
+
     if (gl.walk && gl.directionFlag == 0) {
-        //man is walking...
-        //when time is up, advance the frame.
-        timers.recordTime(&timers.timeCurrent);
-        double timeSpan =
-            timers.timeDiff(&timers.maincharacterTime,
-                    &timers.timeCurrent);
-        if (timeSpan > gl.delay) {
-            //advance
-            ++gl.maincharacterFrame;
+	//man is walking...
+	//when time is up, advance the frame.
+	timers.recordTime(&timers.timeCurrent);
+	double timeSpan =
+	    timers.timeDiff(&timers.maincharacterTime,
+		    &timers.timeCurrent);
+	if (timeSpan > gl.delay) {
+	    //advance
+	    ++gl.maincharacterFrame;
 
-            moveSpriteLeft(&mariEnemy);
-            moveSpriteLeft(&heart1);
-            moveSpriteLeft(&heart2);
-            moveSpriteLeft(&speedboost1);
-            moveSpriteLeft(&shield1);
-            moveSpriteLeft(&turret);
-            moveSpriteLeft(&enemy1);
+	    moveSpriteLeft(&mariEnemy);
+	    moveSpriteLeft(&heart1);
+	    moveSpriteLeft(&heart2);
+	    moveSpriteLeft(&speedboost1);
+	    moveSpriteLeft(&shield1);
+	    moveSpriteLeft(&turret);
+	    moveSpriteLeft(&enemy1);
 
-            if (gl.maincharacterFrame >= 8)
-                gl.maincharacterFrame -= 8;
-            timers.recordTime(&timers.maincharacterTime);
-        }
+	    if (gl.maincharacterFrame >= 8)
+		gl.maincharacterFrame -= 8;
+	    timers.recordTime(&timers.maincharacterTime);
+	}
     } else if (gl.walk && gl.directionFlag == 1) {
-        //man is walking...
-        //when time is up, advance the frame.
-        timers.recordTime(&timers.timeCurrent);
-        double timeSpan =
-            timers.timeDiff(&timers.maincharacterTime,
-                    &timers.timeCurrent);
-        if (timeSpan > gl.delay) {
-            //advance
-            ++gl.maincharacterFrame;
-            mariEnemy.cx++;
-            moveSpriteRight(&mariEnemy);
-            moveSpriteRight(&heart1);
-            moveSpriteRight(&heart2);
-            moveSpriteRight(&shield1);
-            moveSpriteRight(&speedboost1);
-            moveSpriteRight(&turret);
-            moveSpriteRight(&enemy1);
-            if (gl.maincharacterFrame >= 8)
-                gl.maincharacterFrame -= 8;
-            timers.recordTime(&timers.maincharacterTime);
-        }
+	//man is walking...
+	//when time is up, advance the frame.
+	timers.recordTime(&timers.timeCurrent);
+	double timeSpan =
+	    timers.timeDiff(&timers.maincharacterTime,
+		    &timers.timeCurrent);
+	if (timeSpan > gl.delay) {
+	    //advance
+	    ++gl.maincharacterFrame;
+	    mariEnemy.cx++;
+	    moveSpriteRight(&mariEnemy);
+	    moveSpriteRight(&heart1);
+	    moveSpriteRight(&heart2);
+	    moveSpriteRight(&shield1);
+	    moveSpriteRight(&speedboost1);
+	    moveSpriteRight(&turret);
+	    moveSpriteRight(&enemy1);
+	    if (gl.maincharacterFrame >= 8)
+		gl.maincharacterFrame -= 8;
+	    timers.recordTime(&timers.maincharacterTime);
+	}
     }
     if (gl.walk || gl.keys[XK_Right]) {
-        //man is walking...
-        //when time is up, advance the frame.
-        moveSpriteLeft(&mariEnemy);
-        moveSpriteLeft(&heart1);
-        moveSpriteLeft(&heart2);
-        moveSpriteLeft(&shield1);
-        moveSpriteLeft(&speedboost1);
-        moveSpriteLeft(&turret);
-        moveSpriteLeft(&enemy1);
-        timers.recordTime(&timers.timeCurrent);
-        double timeSpan =
-            timers.timeDiff(&timers.maincharacterTime,
-                    &timers.timeCurrent);
-        if (timeSpan > gl.delay) {
-            //advance
-            ++gl.maincharacterFrame;
-            if (gl.maincharacterFrame >= 8)
-                gl.maincharacterFrame -= 8;
-            timers.recordTime(&timers.maincharacterTime);
-        }
-        for (int i=0; i<20; i++) {
-            gl.box[i].x -= 1.0 * (0.05 / gl.delay);
-            if (gl.box[i].x < -10.0)
-                gl.box[i].x += gl.xres + 10.0;
-            gl.camera[0] += 2.0/lev.tilesize[0] * (0.05 / gl.delay);
-            if (gl.camera[0] < 0.0)
-                gl.camera[0] = 0.0;
-        }
+	//man is walking...
+	//when time is up, advance the frame.
+	moveSpriteLeft(&mariEnemy);
+	moveSpriteLeft(&heart1);
+	moveSpriteLeft(&heart2);
+	moveSpriteLeft(&shield1);
+	moveSpriteLeft(&speedboost1);
+	moveSpriteLeft(&turret);
+	moveSpriteLeft(&enemy1);
+	timers.recordTime(&timers.timeCurrent);
+	double timeSpan =
+	    timers.timeDiff(&timers.maincharacterTime,
+		    &timers.timeCurrent);
+	if (timeSpan > gl.delay) {
+	    //advance
+	    ++gl.maincharacterFrame;
+	    if (gl.maincharacterFrame >= 8)
+		gl.maincharacterFrame -= 8;
+	    timers.recordTime(&timers.maincharacterTime);
+	}
+	gl.camera[0] += gl.movementSpeed;//2.0/lev.tilesize[0] * (0.05 / gl.delay);
+	for (int i=0; i<20; i++) {
+	    gl.box[i].x -= 1.0 * (0.05 / gl.delay);
+	    if (gl.box[i].x < -10.0)
+		gl.box[i].x += gl.xres + 10.0;
+	    //gl.camera[0] += gl.movementSpeed;//2.0/lev.tilesize[0] * (0.05 / gl.delay);
+	    if (gl.camera[0] < 0.0)
+		gl.camera[0] = 0.0;
+	}
     }
     if (gl.walk || gl.keys[XK_Left]) {
-        //man is walking...
-        //when time is up, advance the frame.
-        moveSpriteRight(&mariEnemy);
-        moveSpriteRight(&heart1);
-        moveSpriteRight(&heart2);
-        moveSpriteRight(&shield1);
-        moveSpriteRight(&speedboost1);
-        moveSpriteRight(&turret);
-        moveSpriteRight(&enemy1);
-        timers.recordTime(&timers.timeCurrent);
-        double timeSpan =
-            timers.timeDiff(&timers.maincharacterTime,
-                    &timers.timeCurrent);
-        if (timeSpan > gl.delay) {
-            //advance
-            ++gl.maincharacterFrame;
-            if (gl.maincharacterFrame >= 8)
-                gl.maincharacterFrame -= 8;
-            timers.recordTime(&timers.maincharacterTime);
-        }
+	//man is walking...
+	//when time is up, advance the frame.
+	moveSpriteRight(&mariEnemy);
+	moveSpriteRight(&heart1);
+	moveSpriteRight(&heart2);
+	moveSpriteRight(&shield1);
+	moveSpriteRight(&speedboost1);
+	moveSpriteRight(&turret);
+	moveSpriteRight(&enemy1);
+	timers.recordTime(&timers.timeCurrent);
+	double timeSpan =
+	    timers.timeDiff(&timers.maincharacterTime,
+		    &timers.timeCurrent);
+	if (timeSpan > gl.delay) {
+	    //advance
+	    ++gl.maincharacterFrame;
+	    if (gl.maincharacterFrame >= 8)
+		gl.maincharacterFrame -= 8;
+	    timers.recordTime(&timers.maincharacterTime);
+	}
 
-        for (int i=0; i<20; i++) {
-            gl.box[i].x += 1.0 * (0.05 / gl.delay);
-            if (gl.box[i].x > gl.xres + 10.0)
-                gl.box[i].x -= gl.xres + 10.0;
-            gl.camera[0] -= 2.0/lev.tilesize[0] * (0.05 / gl.delay);
-            if (gl.camera[0] < 0.0)
-                gl.camera[0] = 0.0;
-        }
+	gl.camera[0] -= gl.movementSpeed;//2.0/lev.tilesize[0] * (0.05 / gl.delay);
+	for (int i=0; i<20; i++) {
+	    gl.box[i].x += 1.0 * (0.05 / gl.delay);
+	    if (gl.box[i].x > gl.xres + 10.0)
+		gl.box[i].x -= gl.xres + 10.0;
+	    //gl.camera[0] -= gl.movementSpeed;//2.0/lev.tilesize[0] * (0.05 / gl.delay);
+	    if (gl.camera[0] < 0.0)
+		gl.camera[0] = 0.0;
+	}
     }
 }
 
 void render(void)
 {
-    //clearScreen();
+
     if (gl.display_startmenu) {
-        start_menu(gl.xres, gl.yres);
-        cout << "start menu" << endl;
+	start_menu(gl.xres, gl.yres);
+	cout << "start menu" << endl;
     }
 
     if (gl.display_tutorialmenu) {
-        tutorial_menu(gl.xres, gl.yres);
-        cout << "tutorial one" << endl;
+	tutorial_menu(gl.xres, gl.yres);
+	cout << "tutorial one" << endl;
     }
 
     if (gl.display_tutorialmenu2) {
-        tutorial_menu2(gl.xres, gl.yres);
-        cout << "tutorial two" << endl;
+	tutorial_menu2(gl.xres, gl.yres);
+	cout << "tutorial two" << endl;
     }
 
     if (gl.display_playernamemenu) {
-        playername_menu(gl.xres, gl.yres, input.player_name, input);
-        cout << "player name menu" << endl;
+	playername_menu(gl.xres, gl.yres, input.player_name, input);
+	cout << "player name menu" << endl;
     }
 
     if (gl.display_characterselectionmenu) {
-        characterselection_menu(gl.xres, gl.yres);
-        cout << "character selection" << endl;
+	characterselection_menu(gl.xres, gl.yres);
+	cout << "character selection" << endl;
     }
 
     if (gl.display_levelselectionmenu) {
-        levelselection_menu(gl.xres, gl.yres);
-        cout << "level selection" << endl;
+	levelselection_menu(gl.xres, gl.yres);
+	cout << "level selection" << endl;
     }
 
     if (gl.display_creditsmenu) {
-        cout << "credit menu" << endl;
-        credits_screen(gl.xres, gl.yres);
+	cout << "credit menu" << endl;
+	credits_screen(gl.xres, gl.yres);
     }
 
     if (gl.display_startinggame) {
-        //clearScreen();    
-        renderBackground();
-        renderTiles();
-        //renderPlatform();
-        renderChristianSprites();
-        showTurret();
-        showenemy1();
-        show_mari();
-        healthBar(gl.xres, gl.yres);
-        renderTimeDisplay();
+	//clearScreen();    
+	renderBackground();
+	renderTiles();
+	//renderPlatform();
+	renderChristianSprites();
+	showTurret();
+	showenemy1();
+	show_mari();
+	healthBar(gl.xres, gl.yres);
+	renderTimeDisplay();
     }
 }

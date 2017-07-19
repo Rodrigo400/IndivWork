@@ -98,21 +98,44 @@ void renderTiles()
 				//glDisable(GL_BLEND);
 				glPopMatrix();
 				glBindTexture(GL_TEXTURE_2D, 0);
-			}
-			if (lev.arr[row][col] == 'b') {
-				glColor3f(0.6, 0.6, 0.6);
+			}	
+			if (lev.arr[row][col] == 'l') {
+				glColor3f(0.8, 0.8, 0.6);
 				glPushMatrix();
+				//glEnable(GL_BLEND);
+				//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				//glColor4f(1.0, 1.0, 0.0, 0.0);
+				glBindTexture(GL_TEXTURE_2D, gl.lavaTexture);
 				Vec tr = { (Flt)j*dd+offx, (Flt)i*lev.ftsz[1]+offy, 0 };
 				glTranslated(tr.x,tr.y,tr.z);
 				int tx = lev.tilesize[0];
 				int ty = lev.tilesize[1];
 				glBegin(GL_QUADS);
-					glVertex2i( 0,  0);
-					glVertex2i( 0, ty);
-					glVertex2i(tx, ty);
-					glVertex2i(tx,  0);
+					glTexCoord2f(0.0, 1.0); glVertex2i( 0,  0);
+					glTexCoord2f(0.0, 0.0); glVertex2i( 0, ty);
+					glTexCoord2f(1.0, 0.0); glVertex2i(tx, ty);
+					glTexCoord2f(1.0, 1.0); glVertex2i(tx,  0);
+				glEnd();
+				//glDisable(GL_BLEND);
+				glPopMatrix();
+				glBindTexture(GL_TEXTURE_2D, 0);
+			}
+			if (lev.arr[row][col] == 'b') {
+				glColor3f(0.6, 0.6, 0.6);
+				glPushMatrix();
+				glBindTexture(GL_TEXTURE_2D, gl.metalTexture);
+				Vec tr = { (Flt)j*dd+offx, (Flt)i*lev.ftsz[1]+offy, 0 };
+				glTranslated(tr.x,tr.y,tr.z);
+				int tx = lev.tilesize[0];
+				int ty = lev.tilesize[1];
+				glBegin(GL_QUADS);
+					glTexCoord2f(0.0, 1.0); glVertex2i( 0,  0);
+					glTexCoord2f(0.0, 0.0); glVertex2i( 0, ty);
+					glTexCoord2f(1.0, 0.0); glVertex2i(tx, ty);
+					glTexCoord2f(1.0, 1.0); glVertex2i(tx,  0);
 				glEnd();
 				glPopMatrix();
+				glBindTexture(GL_TEXTURE_2D, 0);
 			}
 			--row;
 		}
@@ -125,9 +148,13 @@ void deathPit()
 {
 //Check for offscreen falling into pit which will kill and restart player
 }
-void powerUp()
+void scoreTime()
 {
-//power ups
+//Add up time and calculate 'if' below or over
+//Minutes x 60 and add Frame which is seconds
+//Calculate score and give a grade or medal
+//--Additional--
+//Create a score tally or point system for game
 }
 void healthBar(int xres, int yres)
 {
