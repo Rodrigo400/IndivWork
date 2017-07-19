@@ -80,11 +80,12 @@ void particlePhysics()
        glTranslatef(gl.particle[i].cx, gl.particle[i].cy, 0);
        float w = gl.particleWidth;
        float h = gl.particleHeight;
+       glBindTexture(GL_TEXTURE_2D, gl.texthighlightTexture);
        glBegin(GL_QUADS);
-       glVertex2i(-w, -h);
-       glVertex2i(-w,  h);
-       glVertex2i(w,   h);
-       glVertex2i(w,  -h);
+       glTexCoord2f(0.0, 1.0); glVertex2i(-w, -h);
+       glTexCoord2f(0.0, 0.0); glVertex2i(-w,  h);
+       glTexCoord2f(1.0, 0.0); glVertex2i(w,   h);
+       glTexCoord2f(1.0, 1.0); glVertex2i(w,  -h);
        glEnd();
        glPopMatrix();
        if(gl.particle[i].direction == 1) {

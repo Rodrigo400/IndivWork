@@ -1047,7 +1047,13 @@ void checkKeys(XEvent *e)
 	case XK_Down:
 	    if (gl.display_startmenu && gl.menu_position != 5) {
 		gl.menu_position++;
-	    } /*else if (gl.display_characterselectionmenu &&
+	    } 
+	    if (gl.display_characterselectionmenu && 
+		    (gl.menu_position >= 1 && gl.menu_position <= 3)) {
+		gl.menu_position = gl.menu_position + 3;
+	    }
+	    
+	    /*else if (gl.display_characterselectionmenu &&
 		    gl.menu_position != 6) {
 		gl.menu_position++;
 	    } else if (gl.display_levelselectionmenu &&
@@ -1061,6 +1067,9 @@ void checkKeys(XEvent *e)
 		    && gl.menu_position != 1) {
 		gl.menu_position--;
 	    }
+	    if (gl.display_characterselectionmenu && 
+		    (gl.menu_position <= 6 && gl.menu_position >= 4))
+	       gl.menu_position = gl.menu_position - 3;	
 	    break;
 	case XK_Return:
 	    if (gl.display_startmenu) {

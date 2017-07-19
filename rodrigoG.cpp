@@ -1421,37 +1421,49 @@ void characterselection_menu(int xres, int yres)
 
     if (gl.keys[XK_Return]) {
         if (gl.menu_position == 1) {
-            //gl.characterSelect = 1;
+            gl.characterSelect = 1;
+	    //system("convert ./images/mainChar1.png ./images/mainChar1.ppm");
+	    //gl.maincharacterImage = ppm6GetImage("./images/mainChar1.ppm");
             gl.display_characterselectionmenu = false;
             gl.display_levelselectionmenu = true;
             gl.menu_position = 1;
             gl.keys[XK_Return] = false;
         } else if (gl.menu_position == 2) {
-            //gl.characterSelect = 1;        // need to change later
+            gl.characterSelect = 2;        // need to change later
+	    //system("convert ./images/mainChar2.png ./images/mainChar2.ppm");
+	    //gl.maincharacterImage = ppm6GetImage("./images/mainChar2.ppm");
             gl.display_characterselectionmenu = false;
             gl.display_levelselectionmenu = true;
             gl.menu_position = 1;
             gl.keys[XK_Return] = false; 
         } else if (gl.menu_position == 3) {
-            //gl.characterSelect = 1;        // need to change later
+            gl.characterSelect = 3;        // need to change later
+	    //system("convert ./images/mainChar3.png ./images/mainChar3.ppm");
+	    //gl.maincharacterImage = ppm6GetImage("./images/mainChar3.ppm");
             gl.display_characterselectionmenu = false;
             gl.display_levelselectionmenu = true;
             gl.menu_position = 1;
             gl.keys[XK_Return] = false;
         } else if (gl.menu_position == 4) {
-            //gl.characterSelect = 1;        // need to change later
+            gl.characterSelect = 4;        // need to change later
+	    //system("convert ./images/mainChar4.png ./images/mainChar4.ppm");
+	    //gl.maincharacterImage = ppm6GetImage("./images/mainChar4.ppm");
             gl.display_characterselectionmenu = false;
             gl.display_levelselectionmenu = true;
             gl.menu_position = 1;
             gl.keys[XK_Return] = false;
         } else if (gl.menu_position == 5) {
-            //gl.characterSelect = 1;        // need to change later
+            gl.characterSelect = 4;        // need to change later
+	    //system("convert ./images/mainChar4.png ./images/mainChar4.ppm");
+	    //gl.maincharacterImage = ppm6GetImage("./images/mainChar4.ppm");
             gl.display_characterselectionmenu = false;
             gl.display_levelselectionmenu = true;
             gl.menu_position = 1;
             gl.keys[XK_Return] = false;
         } else if (gl.menu_position == 6) {
-            //gl.characterSelect = 1;        // need to change later
+            gl.characterSelect = 4;        // need to change later
+	    //system("convert ./images/mainChar4.png ./images/mainChar4.ppm");
+	    //gl.maincharacterImage = ppm6GetImage("./images/mainChar4.ppm");
             gl.display_characterselectionmenu = false;
             gl.display_levelselectionmenu = true;
             gl.menu_position = 1;
